@@ -36,7 +36,7 @@ local function paint4th(widget)
         local w, h = lcd.getWindowSize()
         lcd.font(FONT_L)
         local font_w, font_h = lcd.getTextSize(" ")
-        for i, v in ipairs(widget.values) do
+        for i, v in ipairs(widget.service.vMinValues) do
             local vLabel = "C" .. i .. " : " .. v.low .. "/" .. v.current
             local x = w / 2 - string.len(vLabel) * font_w
             paintCell(i, v, x, y)
@@ -49,15 +49,15 @@ local function paint4th(widget)
         lcd.font(FONT_L)
         local font_w, font_h = lcd.getTextSize(" ")
         local endIndex = startIndex + 3
-        if endIndex > #widget.values then endIndex = #widget.values end
-        print("endIndex: " .. endIndex)
+        if endIndex > #widget.service.vMinValues then endIndex = #widget.service.vMinValues end
+        --print("endIndex: " .. endIndex)
         for i=startIndex, endIndex, 2 do
-            local vLabel = "C" .. i .. " : " .. widget.values[i].low .. "/" .. widget.values[i].current
+            local vLabel = "C" .. i .. " : " .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
             local x = 20
-            paintCell(i, widget.values[i], x, y)
-            if i+1 <= #widget.values then
+            paintCell(i, widget.service.vMinValues[i], x, y)
+            if i+1 <= #widget.service.vMinValues then
                 x = x+1 + string.len(vLabel) * font_w *2 + 15
-                paintCell(i+1, widget.values[i+1], x, y)
+                paintCell(i+1, widget.service.vMinValues[i+1], x, y)
             end
             y = y + font_h
         end
@@ -67,19 +67,19 @@ local function paint4th(widget)
         local y = 5
         lcd.font(FONT_S)
         local font_w, font_h = lcd.getTextSize(" ")
-        for i=1, #widget.values, 3 do
+        for i=1, #widget.service.vMinValues, 3 do
             --print("i: " .. i)
-            local vLabel = "C" .. i .. ":" .. widget.values[i].low .. "/" .. widget.values[i].current
+            local vLabel = "C" .. i .. ":" .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
             local x = 10
-            paintCell(i, widget.values[i], x, y)
-            if i+1 <= #widget.values then
+            paintCell(i, widget.service.vMinValues[i], x, y)
+            if i+1 <= #widget.service.vMinValues then
                 x = x + string.len(vLabel) * font_w + 50
-                paintCell(i+1, widget.values[i+1], x, y)
+                paintCell(i+1, widget.service.vMinValues[i+1], x, y)
             end
 
-            if i+2 <= #widget.values then
+            if i+2 <= #widget.service.vMinValues then
                 x = x+1 + string.len(vLabel) * font_w + 50
-                paintCell(i+2, widget.values[i+2], x, y)
+                paintCell(i+2, widget.service.vMinValues[i+2], x, y)
             end
             y = y + font_h
         end
@@ -87,11 +87,11 @@ local function paint4th(widget)
 
     local y = 5
     local w, h = lcd.getWindowSize()
-    if #widget.values == 2 then
+    if #widget.service.vMinValues == 2 then
         paint2Cells(widget)
-    elseif #widget.values == 3 or #widget.values == 4 then
+    elseif #widget.service.vMinValues == 3 or #widget.service.vMinValues == 4 then
         paint4Cells(widget, 1)
-    elseif #widget.values >= 5 then
+    elseif #widget.service.vMinValues >= 5 then
         if widget.displayState == 0 then
             paintAllCells(widget)
         elseif widget.displayState == 1 then
@@ -110,7 +110,7 @@ local function paint6th(widget)
         local w, h = lcd.getWindowSize()
         lcd.font(FONT_L)
         local font_w, font_h = lcd.getTextSize(" ")
-        for i, v in ipairs(widget.values) do
+        for i, v in ipairs(widget.service.vMinValues) do
             local vLabel = "C" .. i .. " : " .. v.low .. "/" .. v.current
             local x = w / 2 - string.len(vLabel) * font_w
             paintCell(i, v, x, y)
@@ -123,15 +123,15 @@ local function paint6th(widget)
         lcd.font(FONT_L)
         local font_w, font_h = lcd.getTextSize(" ")
         local endIndex = startIndex + 3
-        if endIndex > #widget.values then endIndex = #widget.values end
+        if endIndex > #widget.service.vMinValues then endIndex = #widget.service.vMinValues end
         print("endIndex: " .. endIndex)
         for i=startIndex, endIndex, 2 do
-            local vLabel = "C" .. i .. " : " .. widget.values[i].low .. "/" .. widget.values[i].current
+            local vLabel = "C" .. i .. " : " .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
             local x = 20
-            paintCell(i, widget.values[i], x, y)
-            if i+1 <= #widget.values then
+            paintCell(i, widget.service.vMinValues[i], x, y)
+            if i+1 <= #widget.service.vMinValues then
                 x = x+1 + string.len(vLabel) * font_w *2 + 15
-                paintCell(i+1, widget.values[i+1], x, y)
+                paintCell(i+1, widget.service.vMinValues[i+1], x, y)
             end
             y = y + font_h
         end
@@ -141,19 +141,19 @@ local function paint6th(widget)
         local y = 5
         lcd.font(FONT_S)
         local font_w, font_h = lcd.getTextSize(" ")
-        for i=1, #widget.values, 3 do
+        for i=1, #widget.service.vMinValues, 3 do
             --print("i: " .. i)
-            local vLabel = "C" .. i .. ":" .. widget.values[i].low .. "/" .. widget.values[i].current
+            local vLabel = "C" .. i .. ":" .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
             local x = 10
-            paintCell(i, widget.values[i], x, y)
-            if i+1 <= #widget.values then
+            paintCell(i, widget.service.vMinValues[i], x, y)
+            if i+1 <= #widget.service.vMinValues then
                 x = x + string.len(vLabel) * font_w + 50
-                paintCell(i+1, widget.values[i+1], x, y)
+                paintCell(i+1, widget.service.vMinValues[i+1], x, y)
             end
 
-            if i+2 <= #widget.values then
+            if i+2 <= #widget.service.vMinValues then
                 x = x+1 + string.len(vLabel) * font_w + 50
-                paintCell(i+2, widget.values[i+2], x, y)
+                paintCell(i+2, widget.service.vMinValues[i+2], x, y)
             end
             y = y + font_h
         end
@@ -161,11 +161,11 @@ local function paint6th(widget)
 
     local y = 5
     local w, h = lcd.getWindowSize()
-    if #widget.values == 2 then
+    if #widget.service.vMinValues == 2 then
         paint2Cells(widget)
-    elseif #widget.values == 3 or #widget.values == 4 then
+    elseif #widget.service.vMinValues == 3 or #widget.service.vMinValues == 4 then
         paint4Cells(widget, 1)
-    elseif #widget.values >= 5 then
+    elseif #widget.service.vMinValues >= 5 then
         if widget.displayState == 0 then
             paintAllCells(widget)
         elseif widget.displayState == 1 then
@@ -176,44 +176,20 @@ local function paint6th(widget)
     end
 end
 
-function reset_if_needed(widget)
-    -- test if the reset switch is toggled, if so then reset all internal flags
-    if widget.resetSwitch then
-        -- Update switch position
-        local debounced = widget.scheduler.check('reset_sw')
-        --print("debounced: " .. tostring(debounced))
-        local resetSwitchValue = widget.resetSwitch:value()
-        -- print('resetSwitchValue: ' .. tostring(resetSwitchValue))
-        if (debounced == nil or debounced == true) and 100 == resetSwitchValue  then
-            -- reset switch
-            widget.scheduler.add('reset_sw', false, 2) -- add the reset switch to the scheduler
-            --print("reset start task: " .. tostring(widget.scheduler.tasks['reset_sw'].ready))
-            widget.scheduler.clear('reset_sw') -- set the reset switch to false in the scheduler so we don't run again
-            --print("reset task: " .. tostring(widget.scheduler.tasks['reset_sw'].ready))
-            --print("reset switch toggled - debounced: " .. tostring(debounced))
-            widget.values = {}
-            print("reset event")
-            widget.scheduler.reset()
-        elseif -100 == resetSwitchValue then
-            --print("reset switch released")
-            widget.scheduler.remove('reset_sw')
-        end
-    end
-end
-
 ----------------------------------------------------------------------------------------------------------------------
 local name = "Voltage Sag"
 local key = "vMin"
 
 local function create()
+    local libservice = libservice or loadService()
+    g_mahRe2Service = g_mahRe2Service or libservice.new()
+    
     local libscheduler = libscheduler or loadSched()
     g_scheduler = g_scheduler or libscheduler.new()
     widget = {
-        values = {},
-        lipoSensor = nil,
+        service = g_mahRe2Service,
+        --scheduler = g_scheduler,
         displayState = 0,
-        resetSwitch = nil, -- switch to reset script, usually same switch to reset timers
-        scheduler = g_scheduler,
     }
     return widget
 end
@@ -233,69 +209,44 @@ local function paint(widget)
 end
 
 local function wakeup(widget)
-    --widget.bg_func()
-    local sensor = system.getSource(widget.lipoSensor:name())
-    local updateRequired = false
-    widget.scheduler.tick()
-    reset_if_needed(widget)
-    if sensor ~= nil then
-        for cell = 1, sensor:value(OPTION_CELL_COUNT) do
-            local cellVoltage = sensor:value(OPTION_CELL_INDEX(cell))
-
-            if widget.values[cell] == nil or widget.values[cell].current ~= cellVoltage then
-                updateRequired = true
-                if widget.values[cell] == nil then
-                    widget.values[cell] = {}
-                end
-                widget.values[cell].current = cellVoltage
-                if widget.values[cell].low == nil or widget.values[cell].low > cellVoltage then
-                    widget.values[cell].low = cellVoltage
-                end
-            end
-        end
-
-        if updateRequired then
-            lcd.invalidate()
-        end
-    end
-
+    widget.service.bg_func()
 end
 
 local function configure(widget)
     line = form.addLine("lipoSensor")
     form.addSourceField(line, nil,
-            function() return widget.lipoSensor end,
-            function(value) widget.lipoSensor = value end
+            function() return widget.service.lipoSensor end,
+            function(value) widget.service.lipoSensor = value end
     )
 
     line = form.addLine("Reset Switch")
     form.addSwitchField(line, form.getFieldSlots(line)[0], function()
-        return widget.resetSwitch
+        return widget.service.resetSwitch
     end, function(value)
-        widget.resetSwitch = value
+        widget.service.resetSwitch = value
     end)
 end
 
 local function read(widget)
-    widget.lipoSensor = storage.read("lipoSensor")
-    widget.resetSwitch = storage.read("resetSwitch")
+    widget.service.lipoSensor = storage.read("lipoSensor")
+    widget.service.resetSwitch = storage.read("resetSwitch")
 end
 
 local function write(widget)
-    storage.write("lipoSensor" ,widget.lipoSensor)
-    storage.write("resetSwitch", widget.resetSwitch)
+    storage.write("lipoSensor" ,widget.service.lipoSensor)
+    storage.write("resetSwitch", widget.service.resetSwitch)
 end
 
 local function event(widget, category, value, x, y)
 
     local function event_end_debounce()
-        widget.scheduler.remove('touch_event')
+        widget.service.scheduler.remove('touch_event')
         print("event_end_debounce")
     end
 
     --print("Event received:", category, value, x, y)
     if category == EVT_KEY and value == KEY_ENTER_BREAK or category == EVT_TOUCH then
-        local debounced = widget.scheduler.check('touch_event')
+        local debounced = widget.service.scheduler.check('touch_event')
         if debounced == nil then
             print("debounced: nil")
         else
@@ -303,8 +254,8 @@ local function event(widget, category, value, x, y)
         end
 
         if (debounced == nil or debounced == true)  then
-            widget.scheduler.add('touch_event', false, 1, event_end_debounce) -- add the touch event to the scheduler
-            widget.scheduler.clear('touch_event') -- set touch event to false in the scheduler so we don't run again
+            widget.service.scheduler.add('touch_event', false, 1, event_end_debounce) -- add the touch event to the scheduler
+            widget.service.scheduler.clear('touch_event') -- set touch event to false in the scheduler so we don't run again
             widget.displayState = (widget.displayState + 1) % 3
             print("touch event: " .. widget.displayState)
             lcd.invalidate()

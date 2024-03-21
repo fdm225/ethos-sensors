@@ -4,18 +4,24 @@ function lib.new()
     local libscheduler = libscheduler or loadSched()
     g_scheduler = g_scheduler or libscheduler.new()
     local service = {
+        -- system stuff here
+        startTime = os.clock(),
+        scheduler = g_scheduler, 
+        soundDirPath = "/scripts/sensorLib/sounds/", -- where you put the sound files,
+        
+        -- common stuff here
+        resetSwitch = nil, -- switch to reset script, usually same switch to reset timers
+        
+        -- mahRe2 stuff here
         -- get system info here
         --currentSensor = system.getSource("Current"),
         source = system.getSource("Consumption"),
-        resetSwitch = nil, -- switch to reset script, usually same switch to reset timers
-        startTime = os.clock(),
-        scheduler = g_scheduler, -- todo: check to see if this can be removed
         --source = system.getSource("Throttle"), -- todo: check to see if this can be removed
 
-        -- misc
+        -- mahRe2 misc
         canCallInitFuncAgain = false,
 
-        -- capacity variables in mAh values
+        -- mahRe2 capacity variables in mAh values
         sfCapacityMah = {}, -- list of capacity values assigned to the special function buttons
         capacityFullMah = 5000, -- total pack capacity
         capacityFullUpdated = false,
@@ -23,17 +29,20 @@ function lib.new()
         capacityReservedMah = 0, -- adjusted capacity based on reserved percent in mAh
         capacityRemainingMah = 0, -- remaining battery based on capacityRemainingMah
 
-        -- capacity variables in percentages
+        -- mahRe2 capacity variables in percentages
         capacityReservePercent = 20, -- Reserve Capacity: Remaining % Displayed = Calculated Remaining % - Reserve %
         batteryRemainingPercent = 0,
 
-        -- Announcements
-        soundDirPath = "/scripts/sensorLib/sounds/", -- where you put the sound files,
+        -- mahRe2 Announcements
         announcePercentRemaining = true,
         batteryRemainingPercentFileName = 0, -- updated in service.PlayPercentRemaining
         batteryRemainingPercentPlayed = 0, -- updated in service.PlayPercentRemaining
         atZeroPlayedCount = 0, -- updated in initializeValues, service.PlayPercentRemaining
         playAtZero = 1,
+        
+        -- vMin stuff below here
+        vMinValues = {},
+        lipoSensor = nil,
     }
 
     function service.playPercentRemaining()
@@ -88,6 +97,7 @@ function lib.new()
                 --print("reset task: " .. tostring(service.scheduler.tasks['reset_sw'].ready))
                 --print("reset switch toggled - debounced: " .. tostring(debounced))
                 print("reset event")
+                service.vMinValues = {}
                 service.startTime = os.clock()  -- this resets the mAh used counter
                 service.scheduler.reset()
                 service.initializeValues()
@@ -102,7 +112,11 @@ function lib.new()
         -- test if the reset switch is toggled, if so then reset all internal flags
         service.scheduler.tick()
         service.reset_if_needed()
+        service.mahRe2_bg_func()
+        service.vMin_bg_func()
+    end
 
+    function service.mahRe2_bg_func()
         -- check the special function buttons to see if there is a change in pack capacity
         if service.useSpecialFunctionButtons then
             for i = 0, 6, 1 do
@@ -149,6 +163,33 @@ function lib.new()
         lcd.invalidate()
     end
 
+    function service.vMin_bg_func()
+        local sensor = system.getSource(service.lipoSensor:name())
+        local updateRequired = false
+        service.scheduler.tick()
+        service.reset_if_needed(widget)
+        if sensor ~= nil then
+            for cell = 1, sensor:value(OPTION_CELL_COUNT) do
+                local cellVoltage = sensor:value(OPTION_CELL_INDEX(cell))
+    
+                if service.vMinValues[cell] == nil or service.vMinValues[cell].current ~= cellVoltage then
+                    updateRequired = true
+                    if service.vMinValues[cell] == nil then
+                        service.vMinValues[cell] = {}
+                    end
+                    service.vMinValues[cell].current = cellVoltage
+                    if service.vMinValues[cell].low == nil or service.vMinValues[cell].low > cellVoltage then
+                        service.vMinValues[cell].low = cellVoltage
+                    end
+                end
+            end
+    
+            if updateRequired then
+                lcd.invalidate()
+            end
+        end
+    end
+    
     return service
 end
 

@@ -60,7 +60,7 @@ function lib.new()
                     --_G[varName] = false
                     task.ready = false
                 end
-                print(varName .. " " .. deltaTime .. "/" .. task.interval .. " mod: " .. math.floor(deltaTime % task.interval) .. " ready: " .. tostring(task.ready))
+                --print(varName .. " " .. deltaTime .. "/" .. task.interval .. " mod: " .. math.floor(deltaTime % task.interval) .. " ready: " .. tostring(task.ready))
             end
         end
     end
