@@ -15,7 +15,7 @@ function lib.new()
         -- mahRe2 stuff here
         -- get system info here
         --currentSensor = system.getSource("Current"),
-        source = system.getSource("Consumption"),
+        consumptionSensor = system.getSource("Consumption"),
         --source = system.getSource("Throttle"), -- todo: check to see if this can be removed
 
         -- mahRe2 misc
@@ -43,6 +43,11 @@ function lib.new()
         -- vMin stuff below here
         vMinValues = {},
         lipoSensor = nil,
+
+        -- watt stuff below here
+        currentSensor = nil,
+        wattsCurrentValue = 0,
+        wattsMaxValue = 0,
     }
 
     function service.playPercentRemaining()
@@ -74,6 +79,7 @@ function lib.new()
 
     function service.initializeValues()
         if service then
+            --mahRe2 stuff here
             service.capacityReservedMah = service.capacityFullMah * (100 - service.capacityReservePercent) / 100
             service.capacityRemainingMah = service.capacityReservedMah
             service.batteryRemainingPercent = 0
@@ -97,10 +103,18 @@ function lib.new()
                 --print("reset task: " .. tostring(service.scheduler.tasks['reset_sw'].ready))
                 --print("reset switch toggled - debounced: " .. tostring(debounced))
                 print("reset event")
-                service.vMinValues = {}
+
                 service.startTime = os.clock()  -- this resets the mAh used counter
                 service.scheduler.reset()
                 service.initializeValues()
+
+                -- vMin stuff here
+                service.vMinValues = {}
+
+                -- watt stuff here
+                service.wattsCurrentValue = 0
+                service.wattsMaxValue = 0
+
             elseif -100 == resetSwitchValue then
                 --print("reset switch released")
                 service.scheduler.remove('reset_sw')
@@ -114,6 +128,7 @@ function lib.new()
         service.reset_if_needed()
         service.mahRe2_bg_func()
         service.vMin_bg_func()
+        service.watts_bg_func()
     end
 
     function service.mahRe2_bg_func()
@@ -136,9 +151,9 @@ function lib.new()
             service.initializeValues()
         end
 
-        if service.source:value() ~= service.capacityUsedMah then
+        if service.consumptionSensor ~= nil and service.consumptionSensor:value() ~= service.capacityUsedMah then
             --service.capacityUsedMah = math.floor(service.currentSensor:value() * 1000 * (os.clock() - service.startTime) / 3600)
-            service.capacityUsedMah = service.source:value()
+            service.capacityUsedMah = service.consumptionSensor:value()
             --print("capacityUsedMah: " .. service.capacityUsedMah)
             if (service.capacityUsedMah == 0) and service.canCallInitFuncAgain then
                 -- service.capacityUsedMah == 0 when Telemetry has been reset or model loaded
@@ -164,32 +179,46 @@ function lib.new()
     end
 
     function service.vMin_bg_func()
-        local sensor = system.getSource(service.lipoSensor:name())
-        local updateRequired = false
-        service.scheduler.tick()
-        service.reset_if_needed(widget)
-        if sensor ~= nil then
-            for cell = 1, sensor:value(OPTION_CELL_COUNT) do
-                local cellVoltage = sensor:value(OPTION_CELL_INDEX(cell))
-    
-                if service.vMinValues[cell] == nil or service.vMinValues[cell].current ~= cellVoltage then
-                    updateRequired = true
-                    if service.vMinValues[cell] == nil then
-                        service.vMinValues[cell] = {}
-                    end
-                    service.vMinValues[cell].current = cellVoltage
-                    if service.vMinValues[cell].low == nil or service.vMinValues[cell].low > cellVoltage then
-                        service.vMinValues[cell].low = cellVoltage
+        if service.lipoSensor ~= nil then
+            local sensor = system.getSource(service.lipoSensor:name())
+            local updateRequired = false
+
+            if sensor ~= nil then
+                for cell = 1, sensor:value(OPTION_CELL_COUNT) do
+                    local cellVoltage = sensor:value(OPTION_CELL_INDEX(cell))
+
+                    if service.vMinValues[cell] == nil or service.vMinValues[cell].current ~= cellVoltage then
+                        updateRequired = true
+                        if service.vMinValues[cell] == nil then
+                            service.vMinValues[cell] = {}
+                        end
+                        service.vMinValues[cell].current = cellVoltage
+                        if service.vMinValues[cell].low == nil or service.vMinValues[cell].low > cellVoltage then
+                            service.vMinValues[cell].low = cellVoltage
+                        end
                     end
                 end
+
+                if updateRequired then
+                    lcd.invalidate()
+                end
             end
-    
-            if updateRequired then
-                lcd.invalidate()
+        end
+
+    end
+
+    function service.watts_bg_func()
+        if service.lipoSensor ~= nil and service.currentSensor ~= nil then
+            local amps = service.currentSensor:value()
+            local volts = service.lipoSensor:value()
+            --print("amps: " .. amps .. " volts: " .. volts)
+            service.wattsCurrentValue = amps * volts
+            if service.wattsCurrentValue > service.wattsMaxValue then
+                service.wattsMaxValue = service.wattsCurrentValue
             end
         end
     end
-    
+
     return service
 end
 

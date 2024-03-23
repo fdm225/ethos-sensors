@@ -228,8 +228,8 @@ local function configure(widget)
 
     line = form.addLine("Source")
     form.addSourceField(line, nil,
-            function() return widget.service.source end,
-            function(value) widget.service.source = value end
+            function() return widget.service.consumptionSensor end,
+            function(value) widget.service.consumptionSensor = value end
     )
 
 end
@@ -260,7 +260,7 @@ local function read(widget)
                 print("setting default value:" .. specialFunctionButton .. " " .. sfDefaultValues[i])
             end
         end
-        widget.service.source = storage.read("source") | system.getSource("Consumption")
+        widget.service.consumptionSensor = storage.read("source") | system.getSource("Consumption")
     end
 end
 
@@ -278,7 +278,7 @@ local function write(widget)
             storage.write("sfCapacityMah" .. i, widget.service.sfCapacityMah[i])
             print("writing " .. specialFunctionButton .. " " .. widget.service.sfCapacityMah[i])
         end
-        storage.write("source", widget.service.source)
+        storage.write("source", widget.service.consumptionSensor)
     end
 end
 

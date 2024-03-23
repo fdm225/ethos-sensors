@@ -176,6 +176,81 @@ local function paint6th(widget)
     end
 end
 
+local function paint9th(widget)
+    -- 1/9 screen 388x132 (supported)
+
+    function paint2Cells(widget)
+        local y = 5
+        local w, h = lcd.getWindowSize()
+        lcd.font(FONT_L)
+        local font_w, font_h = lcd.getTextSize(" ")
+        for i, v in ipairs(widget.service.vMinValues) do
+            local vLabel = "C" .. i .. " : " .. v.low .. "/" .. v.current
+            local x = w / 2 - string.len(vLabel) * font_w
+            x=0
+            paintCell(i, v, x, y)
+            y = y + font_h
+        end
+    end
+
+    function paint4Cells(widget, startIndex)
+        local y = 5
+        lcd.font(FONT_L)
+        local font_w, font_h = lcd.getTextSize(" ")
+        local endIndex = startIndex + 3
+        if endIndex > #widget.service.vMinValues then endIndex = #widget.service.vMinValues end
+        print("endIndex: " .. endIndex)
+        for i=startIndex, endIndex, 2 do
+            local vLabel = "C" .. i .. " : " .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
+            local x = 20
+            paintCell(i, widget.service.vMinValues[i], x, y)
+            if i+1 <= #widget.service.vMinValues then
+                x = x+1 + string.len(vLabel) * font_w *2 + 15
+                paintCell(i+1, widget.service.vMinValues[i+1], x, y)
+            end
+            y = y + font_h
+        end
+    end
+
+    function paintAllCells(widget)
+        local y = 5
+        lcd.font(FONT_S)
+        local font_w, font_h = lcd.getTextSize(" ")
+        for i=1, #widget.service.vMinValues, 3 do
+            --print("i: " .. i)
+            local vLabel = "C" .. i .. ":" .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
+            local x = 10
+            paintCell(i, widget.service.vMinValues[i], x, y)
+            if i+1 <= #widget.service.vMinValues then
+                x = x + string.len(vLabel) * font_w + 50
+                paintCell(i+1, widget.service.vMinValues[i+1], x, y)
+            end
+
+            if i+2 <= #widget.service.vMinValues then
+                x = x+1 + string.len(vLabel) * font_w + 50
+                paintCell(i+2, widget.service.vMinValues[i+2], x, y)
+            end
+            y = y + font_h
+        end
+    end
+
+    local y = 5
+    local w, h = lcd.getWindowSize()
+    if #widget.service.vMinValues == 2 then
+        paint2Cells(widget)
+    elseif #widget.service.vMinValues == 3 or #widget.service.vMinValues == 4 then
+        paint4Cells(widget, 1)
+    elseif #widget.service.vMinValues >= 5 then
+        if widget.displayState == 0 then
+            paintAllCells(widget)
+        elseif widget.displayState == 1 then
+            paint4Cells(widget, 1)
+        else
+            paint4Cells(widget, 5)
+        end
+    end
+end
+
 ----------------------------------------------------------------------------------------------------------------------
 local name = "Voltage Sag"
 local key = "vMin"
@@ -198,11 +273,13 @@ local function paint(widget)
 
     local w, h = lcd.getWindowSize()
     local y = 0
-
+    -- print("w: " .. w .. " h: " .. h)
     if w == 388 and h == 132 then
         paint4th(widget)
     elseif w == 300 and h == 66 then
         paint6th(widget)
+    elseif w == 256 and h == 78 then
+        paint9th(widget)
     else
         paint6th(widget)
     end
