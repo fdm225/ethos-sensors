@@ -195,14 +195,14 @@ local function paint9th(widget)
 
     function paint4Cells(widget, startIndex)
         local y = 5
-        lcd.font(FONT_L)
+        lcd.font(FONT_M)
         local font_w, font_h = lcd.getTextSize(" ")
         local endIndex = startIndex + 3
         if endIndex > #widget.service.vMinValues then endIndex = #widget.service.vMinValues end
         print("endIndex: " .. endIndex)
         for i=startIndex, endIndex, 2 do
             local vLabel = "C" .. i .. " : " .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
-            local x = 20
+            local x = 0
             paintCell(i, widget.service.vMinValues[i], x, y)
             if i+1 <= #widget.service.vMinValues then
                 x = x+1 + string.len(vLabel) * font_w *2 + 15
@@ -216,7 +216,7 @@ local function paint9th(widget)
         local y = 5
         lcd.font(FONT_S)
         local font_w, font_h = lcd.getTextSize(" ")
-        for i=1, #widget.service.vMinValues, 3 do
+        for i=1, #widget.service.vMinValues, 2 do
             --print("i: " .. i)
             local vLabel = "C" .. i .. ":" .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
             local x = 10
@@ -224,11 +224,6 @@ local function paint9th(widget)
             if i+1 <= #widget.service.vMinValues then
                 x = x + string.len(vLabel) * font_w + 50
                 paintCell(i+1, widget.service.vMinValues[i+1], x, y)
-            end
-
-            if i+2 <= #widget.service.vMinValues then
-                x = x+1 + string.len(vLabel) * font_w + 50
-                paintCell(i+2, widget.service.vMinValues[i+2], x, y)
             end
             y = y + font_h
         end
