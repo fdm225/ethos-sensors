@@ -103,7 +103,7 @@ local function paint4th(widget)
 end
 
 local function paint6th(widget)
-    -- 1/4 scree 388x132 (supported)
+    -- 1/4 scree 300x66 (supported)
 
     function paint2Cells(widget)
         local y = 5
@@ -177,7 +177,7 @@ local function paint6th(widget)
 end
 
 local function paint9th(widget)
-    -- 1/9 screen 388x132 (supported)
+    -- 1/9 screen 256x78 (supported)
 
     function paint2Cells(widget)
         local y = 5
