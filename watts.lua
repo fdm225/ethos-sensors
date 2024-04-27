@@ -25,20 +25,19 @@ local function create()
 end
 
 local function paint(widget)
-
+    lcd.font(FONT_XL)
     local w, h = lcd.getWindowSize()
-    local x, y = 0, 0
     local displayString = "---/---"
     if widget ~= nil then
         displayString = widget.service.wattsCurrentValue .. "/" .. widget.service.wattsMaxValue
     end
     local font_w, font_h = lcd.getTextSize(displayString)
-    x = math.floor(font_w/2)
-    y = math.floor(font_h/2)
+    --local x = (w - font_w)/2
+    local x = (w - font_w) / 2
+    local y = (h - font_h)/2
 
-    lcd.font(FONT_XL)
-    lcd.color(lcd.RGB(0xF8, 0xB0, 0x38))
-    lcd.drawText(x, y, displayString, CENTER)
+    --lcd.color(lcd.RGB(0xF8, 0xB0, 0x38))
+    lcd.drawText(x, y, displayString)
     lcd.invalidate()
 
 end
