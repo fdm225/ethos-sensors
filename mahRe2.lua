@@ -25,7 +25,7 @@ local function paint4th(widget)
     local w, h = lcd.getWindowSize()
     local color = lcd.RGB(0xF8, 0xB0, 0x38)
     lcd.font(FONT_XS)
-    local capicityLabel = "Capacity: " .. widget.service.capacityFullMah
+    local capicityLabel = "Capacity: " .. tostring(widget.service.capacityFullMah)
     lcd.drawText(w, y, capicityLabel, RIGHT)
 
     local text_w, text_h = lcd.getTextSize("")
@@ -252,7 +252,8 @@ local function read(widget)
         for i = 1, 6, 1 do
             local specialFunctionButton = "sfCapacityMah" .. i
             value = storage.read(specialFunctionButton)
-            if value then
+            print("read sf: " .. i .. " value: " .. value)
+            if value and value > 0 then
                 widget.service.sfCapacityMah[i] = value
                 print("read:" .. specialFunctionButton .. " " .. value)
             else
@@ -271,7 +272,7 @@ local function write(widget)
         storage.write("useSpecialFunctionButtons", widget.service.useSpecialFunctionButtons)
         print("length: " .. #widget.service.sfCapacityMah)
         for i = 1, 6, 1 do
-            if widget.service.sfCapacityMah[i] == nil then
+            if widget.service.sfCapacityMah[i] == nil or widget.service.sfCapacityMah[i] == 0 then
                 widget.service.sfCapacityMah[i] = sfDefaultValues[i]
             end
             local specialFunctionButton = "sfCapacityMah" .. i

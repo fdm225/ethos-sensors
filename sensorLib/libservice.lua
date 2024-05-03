@@ -6,12 +6,12 @@ function lib.new()
     local service = {
         -- system stuff here
         startTime = os.clock(),
-        scheduler = g_scheduler, 
+        scheduler = g_scheduler,
         soundDirPath = "/scripts/sensorLib/sounds/", -- where you put the sound files,
-        
+
         -- common stuff here
         resetSwitch = nil, -- switch to reset script, usually same switch to reset timers
-        
+
         -- mahRe2 stuff here
         -- get system info here
         --currentSensor = system.getSource("Current"),
@@ -20,9 +20,10 @@ function lib.new()
 
         -- mahRe2 misc
         canCallInitFuncAgain = false,
+        useSpecialFunctionButtons = true,
 
         -- mahRe2 capacity variables in mAh values
-        sfCapacityMah = {}, -- list of capacity values assigned to the special function buttons
+        sfCapacityMah = { 4000, 4500, 5000, 5200, 6000, 8200 }, -- list of capacity values assigned to the special function buttons
         capacityFullMah = 5000, -- total pack capacity
         capacityFullUpdated = false,
         capacityUsedMah = 0, -- total mAh used since reset
@@ -39,7 +40,7 @@ function lib.new()
         batteryRemainingPercentPlayed = 0, -- updated in service.PlayPercentRemaining
         atZeroPlayedCount = 0, -- updated in initializeValues, service.PlayPercentRemaining
         playAtZero = 1,
-        
+
         -- vMin stuff below here
         vMinValues = {},
         lipoSensor = nil,
@@ -48,6 +49,12 @@ function lib.new()
         currentSensor = nil,
         wattsCurrentValue = 0,
         wattsMaxValue = 0,
+
+        --vfr stuff below here
+        vfr_24 = 0,
+
+        --rssi stuff below here
+        rssi_24 = 0,
     }
 
     function service.playPercentRemaining()
@@ -78,7 +85,7 @@ function lib.new()
     end
 
     function service.initializeValues()
-        if service then
+        if service and service.capacityFullMah ~= nil then
             --mahRe2 stuff here
             service.capacityReservedMah = service.capacityFullMah * (100 - service.capacityReservePercent) / 100
             service.capacityRemainingMah = service.capacityReservedMah
@@ -114,6 +121,8 @@ function lib.new()
                 -- watt stuff here
                 service.wattsCurrentValue = 0
                 service.wattsMaxValue = 0
+                service.vfr_24 = 0
+                service.rssi_24 = 0
 
             elseif -100 == resetSwitchValue then
                 --print("reset switch released")
