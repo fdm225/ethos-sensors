@@ -43,7 +43,9 @@ local function paint(widget)
 end
 
 local function wakeup(widget)
-    widget.service.bg_func()
+    if widget ~= nil then
+        widget.service.bg_func()
+    end
 end
 
 local function configure(widget)
