@@ -158,22 +158,42 @@ end
 
 local function paint9th(widget)
     -- 1/9 screen 256x78 (supported)
+    if widget.displayState == 0 then
 
-    local y = 5
-    local w, h = lcd.getWindowSize()
-    if #widget.service.vMinValues == 2 then
-        paint2Cells(widget)
-    elseif #widget.service.vMinValues == 3 or #widget.service.vMinValues == 4 then
-        paint4Cells(widget, 1, FONT_M, 0)
-    elseif #widget.service.vMinValues >= 5 then
-        if widget.displayState == 0 then
-            paintAllCells(widget, 2)
-        elseif widget.displayState == 1 then
-            paint4Cells(widget, 1, FONT_M, 0)
-        else
-            paint4Cells(widget, 5, FONT_M, 0)
-        end
     end
+
+    lcd.font(FONT_XL)
+    local w, h = lcd.getWindowSize()
+    local displayString = "---/---"
+    if widget ~= nil then
+        local min_volts, current_volts = widget.service.get_voltage_sum()
+        displayString = string.format("%.2f", min_volts) .. "/" .. string.format("%.2f", current_volts)
+    end
+    local font_w, font_h = lcd.getTextSize(displayString)
+    --local x = (w - font_w)/2
+    local x = (w - font_w) / 2
+    local y = (h - font_h)/2
+
+    --lcd.color(lcd.RGB(0xF8, 0xB0, 0x38))
+    lcd.drawText(x, y, displayString)
+    lcd.invalidate()
+
+
+    --local y = 5
+    --local w, h = lcd.getWindowSize()
+    --if #widget.service.vMinValues == 2 then
+    --    paint2Cells(widget)
+    --elseif #widget.service.vMinValues == 3 or #widget.service.vMinValues == 4 then
+    --    paint4Cells(widget, 1, FONT_M, 0)
+    --elseif #widget.service.vMinValues >= 5 then
+    --    if widget.displayState == 0 then
+    --        paintAllCells(widget, 2)
+    --    elseif widget.displayState == 1 then
+    --        paint4Cells(widget, 1, FONT_M, 0)
+    --    else
+    --        paint4Cells(widget, 5, FONT_M, 0)
+    --    end
+    --end
 end
 
 ----------------------------------------------------------------------------------------------------------------------

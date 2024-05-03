@@ -187,6 +187,16 @@ function lib.new()
         lcd.invalidate()
     end
 
+    function service.get_voltage_sum()
+        local min_volts = 0
+        local current_volts = 0
+        for k,v in ipairs(service.vMinValues) do
+            min_volts = min_volts + service.vMinValues[k].low
+            current_volts = current_volts + service.vMinValues[k].current
+        end
+        return min_volts, current_volts
+    end
+
     function service.vMin_bg_func()
         if service.lipoSensor ~= nil then
             local sensor = system.getSource(service.lipoSensor:name())
