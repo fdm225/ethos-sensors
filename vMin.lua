@@ -16,17 +16,17 @@ local function paintCell(cellIndex, cellData, x, y)
 
     if cellData.low < 3.7 then lcd.color(RED) else lcd.color(WHITE) end
     x = x + text_w
-    lcd.drawText(x, y, cellData.low, LEFT)
+    lcd.drawText(x, y, string.format("%.2f",cellData.low), LEFT)
 
     lcd.color(BLACK)
-    text_w, text_h = lcd.getTextSize(cellData.low)
+    text_w, text_h = lcd.getTextSize(string.format("%.2f",cellData.low))
     x = x + text_w
     lcd.drawText(x, y, "/", LEFT)
 
     if cellData.current < 3.7 then lcd.color(RED) else lcd.color(WHITE) end
     text_w, text_h = lcd.getTextSize("/")
     x = x + text_w
-    lcd.drawText(x, y, cellData.current, LEFT)
+    lcd.drawText(x, y, string.format("%.2f", cellData.current), LEFT)
 end
 
 local function paint2Cells(widget, x_start)
@@ -42,24 +42,55 @@ local function paint2Cells(widget, x_start)
     end
 end
 
-local function paint4Cells(widget, startIndex, fontSize, x)
-        local y = 5
-        lcd.font(fontSize)
-        local font_w, font_h = lcd.getTextSize(" ")
-        local endIndex = startIndex + 3
-        if endIndex > #widget.service.vMinValues then endIndex = #widget.service.vMinValues end
-        --print("endIndex: " .. endIndex)
-        for i=startIndex, endIndex, 2 do
-            local vLabel = "C" .. i .. " : " .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current
-            -- local x = 20
-            paintCell(i, widget.service.vMinValues[i], x, y)
-            if i+1 <= #widget.service.vMinValues then
-                x = x+1 + string.len(vLabel) * font_w *2 + 15
-                paintCell(i+1, widget.service.vMinValues[i+1], x, y)
-            end
-            y = y + font_h
+local function paint4Cells(widget, startIndex, fontSize, x1)
+    lcd.font(fontSize)
+    local w, h = lcd.getWindowSize()
+    local vLabel = "C1 : 4.00/4.00 C2 : 4.00/4.00"
+    local font_w_2x, font_h = lcd.getTextSize(vLabel)
+    local y = (h - font_h *2)/2
+    local endIndex = startIndex + 3
+    
+    if endIndex > #widget.service.vMinValues then endIndex = #widget.service.vMinValues end
+    --print("endIndex: " .. endIndex)
+
+    for i=startIndex, endIndex, 2 do
+        local x = (w - font_w_2x) / 2
+        vLabel = "C" .. i .. " : " .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current .. " "
+        local strW, strH = lcd.getTextSize(vLabel)
+        print("strW: " .. strW)
+        local cw, ch = lcd.getTextSize(" ")
+        print("cw: " .. cw)
+        paintCell(i, widget.service.vMinValues[i], x, y)
+        if i+1 <= #widget.service.vMinValues then
+            x = 195
+            paintCell(i+1, widget.service.vMinValues[i+1], x, y)
         end
+        y = y + font_h
     end
+end
+
+local function paint6Cells(widget, startIndex, fontSize)
+    lcd.font(fontSize)
+    local w, h = lcd.getWindowSize()
+    local vLabel = "C1 : 4.00/4.00 C2 : 4.00/4.00"
+    local font_w_2x, font_h = lcd.getTextSize(vLabel)
+    local y = (h - font_h * 3)/2
+    local endIndex = startIndex + 4
+
+    if endIndex > #widget.service.vMinValues then endIndex = #widget.service.vMinValues end
+    --print("endIndex: " .. endIndex)
+
+    for i=startIndex, endIndex, 2 do
+        local x = (w - font_w_2x) / 2
+        vLabel = "C" .. i .. " : " .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current .. " "
+        paintCell(i, widget.service.vMinValues[i], x, y)
+        if i+1 <= #widget.service.vMinValues then
+            x = 205
+            paintCell(i+1, widget.service.vMinValues[i+1], x, y)
+        end
+        y = y + font_h
+    end
+end
 
 local function paintAllCells(widget, columns)
     local y = 5
@@ -92,7 +123,9 @@ local function paint4th(widget)
         paint2Cells(widget)
     elseif #widget.service.vMinValues == 3 or #widget.service.vMinValues == 4 then
         paint4Cells(widget, 1, FONT_L, 20)
-    elseif #widget.service.vMinValues >= 5 then
+    elseif #widget.service.vMinValues == 5 or #widget.service.vMinValues == 6 then
+        paint6Cells(widget, 1, FONT_L)
+    elseif #widget.service.vMinValues >= 7 then
         if widget.displayState == 0 then
             paintAllCells(widget, 3)
         elseif widget.displayState == 1 then
