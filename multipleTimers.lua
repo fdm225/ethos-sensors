@@ -63,43 +63,42 @@ end
 
 local function paint(widget)
 
+    local function paintTimer(widget, v, w, y)
+        local displayString = v.value
+        if widget.displayNames then
+            displayString = v.name .. " " .. displayString
+        end
+
+        local text_w, text_h = lcd.getTextSize(displayString)
+        local x = (w - text_w) / 2
+
+        lcd.drawText(x, y, displayString )
+        y = y + text_h
+        return y
+    end
+
     local w, h = lcd.getWindowSize()
     lcd.font(FONT_XL)
     local y = 10
-    for i, v in pairs(widget) do
-        if type(v) == 'table' then
-            local displayString = v.value
-            if widget.displayNames then
-                displayString = v.name .. " " .. displayString
-            end
-
-            local text_w, text_h = lcd.getTextSize(displayString)
-            local x = (w - text_w) / 2
-
-            lcd.drawText(x, y, displayString )
-            y = y + text_h
-        end
-    end
-
-    --displayString = widget.timer2.value
-    --lcd.drawText(x, y, displayString )
+    --for i, v in pairs(widget) do
+    --    if type(v) == 'table' then
+    --        local displayString = v.value
+    --        if widget.displayNames then
+    --            displayString = v.name .. " " .. displayString
+    --        end
     --
-    --y = y + text_h
-    --displayString = widget.timer3.value
-    --lcd.drawText(x, y, displayString )
-
-
-    -- print("w: " .. w .. " h: " .. h)
-
-    --if w == 388 and h == 132 then
-    --        paint4th(widget)
-    --    elseif w == 300 and h == 66 then
-    --        paint6th(widget)
-    --    elseif w == 256 and h == 78 then
-    --        paint9th(widget)
-    --    else
-    --        paint6th(widget)
+    --        local text_w, text_h = lcd.getTextSize(displayString)
+    --        local x = (w - text_w) / 2
+    --
+    --        lcd.drawText(x, y, displayString )
+    --        y = y + text_h
+    --    end
     --end
+
+    y = paintTimer(widget, widget.timer1, w, y)
+    y = paintTimer(widget, widget.timer2, w, y)
+    y = paintTimer(widget, widget.timer3, w, y)
+
 end
 
 local function wakeup(widget)
