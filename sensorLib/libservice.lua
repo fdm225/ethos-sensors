@@ -201,11 +201,26 @@ function lib.new()
         if service.lipoSensor ~= nil then
             local sensor = system.getSource(service.lipoSensor:name())
             local updateRequired = false
-
+            -- print("\n")
             if sensor ~= nil then
-                for cell = 1, sensor:value(OPTION_CELL_COUNT) do
-                    local cellVoltage = sensor:value(OPTION_CELL_INDEX(cell))
 
+                --local lcellscount = system.getSource({
+                --      category=lsource:category(),
+                --      member=lsource:member(),
+                --    options=OPTION_CELL_COUNT
+                --        })
+                --        print(lcellscount:value())
+                --local gpsSrc = system.getSource({name="GPS", category=CATEGORY_TELEMETRY_SENSOR })
+	            --local gpsLat = system.getSource({member = gpsSrc, category=CATEGORY_TELEMETRY_SENSOR, options=OPTION_LONGITUDE})
+                local lipoSensor = system.getSource({name="LiPo", category=CATEGORY_TELEMETRY_SENSOR })
+                local numCells = system.getSource({member = lipoSensor:member(), category=CATEGORY_TELEMETRY_SENSOR, options=OPTION_CELL_COUNT})
+
+                -- print("numCells: " .. numCells:value() .. "\n")
+                for cell = 1, numCells:value() do
+                    local cellSensor = system.getSource({member = lipoSensor:member(), category=CATEGORY_TELEMETRY_SENSOR, options=OPTION_CELL_INDEX(cell)})
+                    -- local cellVoltage = sensor:value(OPTION_CELL_INDEX(cell))
+                    local cellVoltage = cellSensor:value()
+                    -- print("cell: " .. cell .. " : " .. cellVoltage .. "\n")
                     if service.vMinValues[cell] == nil or service.vMinValues[cell].current ~= cellVoltage then
                         updateRequired = true
                         if service.vMinValues[cell] == nil then
