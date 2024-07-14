@@ -169,7 +169,7 @@ local function read(widget)
     widget.timer1.input = storage.read("timer1")
     widget.timer2.input = storage.read("timer2")
     widget.timer3.input = storage.read("timer3")
-    widget.displayNames = storage.read("displayNames") | false
+    widget.displayNames = storage.read("displayNames") or false
 end
 
 local function write(widget)
