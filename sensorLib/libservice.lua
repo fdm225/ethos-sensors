@@ -160,7 +160,7 @@ function lib.new()
             service.initializeValues()
         end
 
-        if service.consumptionSensor ~= nil and service.consumptionSensor:value() ~= service.capacityUsedMah then
+        if service.consumptionSensor ~= nil and service.consumptionSensor:value() ~= service.capacityUsedMah  and service.capacityUsedMah ~= nil then
             --service.capacityUsedMah = math.floor(service.currentSensor:value() * 1000 * (os.clock() - service.startTime) / 3600)
             service.capacityUsedMah = service.consumptionSensor:value()
             --print("capacityUsedMah: " .. service.capacityUsedMah)
@@ -171,7 +171,7 @@ function lib.new()
 
                 service.initializeValues()
                 service.canCallInitFuncAgain = false
-            elseif service.capacityUsedMah > 0 then
+            elseif service.capacityUsedMah ~= nil and service.capacityUsedMah > 0 then
                 -- Call init function again when Telemetry has been reset
                 service.canCallInitFuncAgain = true
             end
