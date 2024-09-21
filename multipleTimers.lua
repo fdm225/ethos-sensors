@@ -62,7 +62,6 @@ local function create()
 end
 
 local function paint(widget)
-
     local function paintTimer(widget, v, w, y)
         local displayString = v.value
         if widget.displayNames then
@@ -189,17 +188,17 @@ local function event(widget, category, value, x, y)
     --print("Event received:", category, value, x, y)
     if category == EVT_KEY and value == KEY_ENTER_BREAK or category == EVT_TOUCH then
         local debounced = widget.service.scheduler.check('touch_event')
-        if debounced == nil then
-            print("debounced: nil")
-        else
-            print("debounced: " .. tostring(debounced))
-        end
+        --if debounced == nil then
+        --    print("debounced: nil")
+        --else
+        --    print("debounced: " .. tostring(debounced))
+        --end
 
         if (debounced == nil or debounced == true)  then
             widget.service.scheduler.add('touch_event', false, 1, event_end_debounce) -- add the touch event to the scheduler
             widget.service.scheduler.clear('touch_event') -- set touch event to false in the scheduler so we don't run again
             widget.displayState = (widget.displayState + 1) % 3
-            print("touch event: " .. widget.displayState)
+            --print("touch event: " .. widget.displayState)
             lcd.invalidate()
         end
         return true

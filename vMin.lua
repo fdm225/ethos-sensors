@@ -1,12 +1,12 @@
 -- define default values
 
-function loadSched()
-    if not libSCHED then
-        -- Loadable code chunk is called immediately and returns libGUI
-        libSCHED = loadfile("sensorLib/libscheduler.lua")
-    end
-    return libSCHED()
-end
+--function loadSched()
+--    if not libSCHED then
+--        -- Loadable code chunk is called immediately and returns libGUI
+--        libSCHED = loadfile("sensorLib/libscheduler.lua")
+--    end
+--    return libSCHED()
+--end
 
 local function paintCell(cellIndex, cellData, x, y)
     lcd.color(lcd.RGB(0xF8, 0xB0, 0x38))
@@ -57,9 +57,9 @@ local function paint4Cells(widget, startIndex, fontSize, x1)
         local x = (w - font_w_2x) / 2
         vLabel = "C" .. i .. " : " .. widget.service.vMinValues[i].low .. "/" .. widget.service.vMinValues[i].current .. " "
         local strW, strH = lcd.getTextSize(vLabel)
-        print("strW: " .. strW)
+        --print("strW: " .. strW)
         local cw, ch = lcd.getTextSize(" ")
-        print("cw: " .. cw)
+        --print("cw: " .. cw)
         paintCell(i, widget.service.vMinValues[i], x, y)
         if i+1 <= #widget.service.vMinValues then
             x = 195
@@ -158,16 +158,23 @@ end
 
 local function paint9th(widget)
     -- 1/9 screen 256x78 (supported)
-    if widget.displayState == 0 then
-
-    end
-
     lcd.font(FONT_XL)
     local w, h = lcd.getWindowSize()
     local displayString = "---/---"
     if widget ~= nil then
-        local min_volts, current_volts = widget.service.get_voltage_sum()
-        displayString = string.format("%.2f", min_volts) .. "/" .. string.format("%.2f", current_volts)
+        --print("widget.displayCell: " .. widget.displayCell)
+        if widget.displayCell == 0 then
+            if widget.service ~= null then
+                local min_volts, current_volts = widget.service.get_voltage_sum()
+                displayString = string.format("%.2fv", min_volts) .. "/" .. string.format("%.2fv", current_volts)
+            else
+                displayString = "Sensor Lost"
+            end
+
+        else
+            local min_volts = widget.service.vMinValues[widget.displayCell].low
+            displayString = string.format("C%d : %.2fv",widget.displayCell, min_volts)
+        end
     end
     local font_w, font_h = lcd.getTextSize(displayString)
     --local x = (w - font_w)/2
@@ -204,12 +211,13 @@ local function create()
     local libservice = libservice or loadService()
     g_mahRe2Service = g_mahRe2Service or libservice.new()
     
-    local libscheduler = libscheduler or loadSched()
-    g_scheduler = g_scheduler or libscheduler.new()
+    --local libscheduler = libscheduler or loadSched()
+    --g_scheduler = g_scheduler or libscheduler.new()
     local widget = {
         service = g_mahRe2Service,
         --scheduler = g_scheduler,
         displayState = 0,
+        displayCell = 0
     }
     return widget
 end
@@ -273,23 +281,24 @@ local function event(widget, category, value, x, y)
 
     local function event_end_debounce()
         widget.service.scheduler.remove('touch_event')
-        print("event_end_debounce")
+        --print("event_end_debounce")
     end
 
     --print("Event received:", category, value, x, y)
     if category == EVT_KEY and value == KEY_ENTER_BREAK or category == EVT_TOUCH then
         local debounced = widget.service.scheduler.check('touch_event')
-        if debounced == nil then
-            print("debounced: nil")
-        else
-            print("debounced: " .. tostring(debounced))
-        end
+        --if debounced == nil then
+        --    print("debounced: nil")
+        --else
+        --    print("debounced: " .. tostring(debounced))
+        --end
 
         if (debounced == nil or debounced == true)  then
             widget.service.scheduler.add('touch_event', false, 1, event_end_debounce) -- add the touch event to the scheduler
             widget.service.scheduler.clear('touch_event') -- set touch event to false in the scheduler so we don't run again
             widget.displayState = (widget.displayState + 1) % 3
-            print("touch event: " .. widget.displayState)
+            widget.displayCell = (widget.displayCell + 1) % (#widget.service.vMinValues + 1)
+            --print("touch event: " .. widget.displayCell)
             lcd.invalidate()
         end
         return true

@@ -76,7 +76,7 @@ function lib.new()
 
         local rssi = system.getSource("RSSI")
         if service.batteryRemainingPercent <= 0 and service.atZeroPlayedCount < service.playAtZero and rssi:value() > 0 then
-            print(service.batteryRemainingPercent, service.atZeroPlayedCount)
+            --print(service.batteryRemainingPercent, service.atZeroPlayedCount)
             system.playFile(service.soundDirPath .. "BatNo.wav")
             service.atZeroPlayedCount = service.atZeroPlayedCount + 1
         elseif service.atZeroPlayedCount == service.PlayAtZero and service.batteryRemainingPercent > 0 then
@@ -109,7 +109,7 @@ function lib.new()
                 service.scheduler.clear('reset_sw') -- set the reset switch to false in the scheduler so we don't run again
                 --print("reset task: " .. tostring(service.scheduler.tasks['reset_sw'].ready))
                 --print("reset switch toggled - debounced: " .. tostring(debounced))
-                print("reset event")
+                --print("reset event")
 
                 service.startTime = os.clock()  -- this resets the mAh used counter
                 service.scheduler.reset()
