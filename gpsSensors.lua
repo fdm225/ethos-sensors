@@ -153,7 +153,7 @@ local function event(widget, category, value, x, y)
             widget.service.scheduler.add('touch_event', false, 1, event_end_debounce) -- add the touch event to the scheduler
             widget.service.scheduler.clear('touch_event') -- set touch event to false in the scheduler so we don't run again
             widget.displayState = (widget.displayState + 1) % 2
-            print("touch event: " .. widget.displayState)
+            --print("touch event: " .. widget.displayState)
             lcd.invalidate()
         end
         return true
