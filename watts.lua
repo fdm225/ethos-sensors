@@ -37,6 +37,14 @@ local function paint(widget)
     local y = (h - font_h)/2
 
     --lcd.color(lcd.RGB(0xF8, 0xB0, 0x38))
+
+    if system.getSource("LiPo") == nil or system.getSource("LiPo"):state() == false or
+    system.getSource("Current") == nil or system.getSource("Current"):state() == false then
+        lcd.color(RED)
+    else
+        lcd.color(WHITE)
+    end
+
     lcd.drawText(x, y, displayString)
     lcd.invalidate()
 

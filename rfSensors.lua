@@ -9,8 +9,6 @@ local function create()
     g_mahRe2Service = g_mahRe2Service or libservice.new()
     
     widget = {
-        rssi_24_current = 0,
-        vfr_current = 0,
         service = g_mahRe2Service,
         displayState = 0,
     }
@@ -43,10 +41,10 @@ local function paint(widget)
         --print("widget.displayCell: " .. widget.displayCell)
         if widget.displayState == 0 then  --rssi 2.4ghz
             displayTitle = "RSSI 2.4"
-            displayString = math.floor(widget.service.rssi_24) .. "dB/" .. math.floor(widget.rssi_24_current).."dB"
+            displayString = math.floor(widget.service.rssi_24_min) .. "dB/" .. math.floor(widget.service.rssi_24_current).."dB"
         else
             displayTitle = "VFR 2.4"
-            displayString = math.floor(widget.service.vfr_24) .. "%/" .. math.floor(widget.vfr_current) .. "%"
+            displayString = math.floor(widget.service.vfr_24_min) .. "%/" .. math.floor(widget.service.vfr_current) .. "%"
         end
     end
 
@@ -79,15 +77,7 @@ end
 
 local function wakeup(widget)
     widget.service.reset_if_needed()
-    widget.rssi_24_current = system.getSource("RSSI"):value()
-    if widget.service.rssi_24 < widget.rssi_24_current then
-        widget.service.rssi_24 = widget.rssi_24_current
-    end
-    
-    widget.vfr_current = system.getSource("VFR"):value()
-    if widget.service.vfr_24 < widget.vfr_current then
-        widget.service.vfr_24 = widget.vfr_current
-    end
+    widget.service.rf_bg_func()
     
 end
 
@@ -139,7 +129,7 @@ end
 
 
 local function init()
-    system.registerWidget({ key = "dave", name = "dave", create = create, paint = paint, wakeup = wakeup,
+    system.registerWidget({ key = "rfs", name = "rfs", create = create, paint = paint, wakeup = wakeup,
                             configure = configure, read = read, write = write, persistent = true, event=event })
 end
 

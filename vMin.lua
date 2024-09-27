@@ -173,7 +173,8 @@ local function paint9th(widget)
 
         else
             local min_volts = widget.service.vMinValues[widget.displayCell].low
-            displayString = string.format("C%d : %.2fv",widget.displayCell, min_volts)
+            local current_volts = widget.service.vMinValues[widget.displayCell].current
+            displayString = string.format("C%d : %.2fv/%.2fv",widget.displayCell, min_volts, current_volts)
         end
     end
     local font_w, font_h = lcd.getTextSize(displayString)
@@ -181,26 +182,14 @@ local function paint9th(widget)
     local x = (w - font_w) / 2
     local y = (h - font_h)/2
 
-    --lcd.color(lcd.RGB(0xF8, 0xB0, 0x38))
+    if system.getSource("LiPo") == nil or system.getSource("LiPo"):state() == false then
+        lcd.color(RED)
+    else
+        lcd.color(WHITE)
+    end
+
     lcd.drawText(x, y, displayString)
     lcd.invalidate()
-
-
-    --local y = 5
-    --local w, h = lcd.getWindowSize()
-    --if #widget.service.vMinValues == 2 then
-    --    paint2Cells(widget)
-    --elseif #widget.service.vMinValues == 3 or #widget.service.vMinValues == 4 then
-    --    paint4Cells(widget, 1, FONT_M, 0)
-    --elseif #widget.service.vMinValues >= 5 then
-    --    if widget.displayState == 0 then
-    --        paintAllCells(widget, 2)
-    --    elseif widget.displayState == 1 then
-    --        paint4Cells(widget, 1, FONT_M, 0)
-    --    else
-    --        paint4Cells(widget, 5, FONT_M, 0)
-    --    end
-    --end
 end
 
 ----------------------------------------------------------------------------------------------------------------------

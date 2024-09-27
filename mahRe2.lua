@@ -101,6 +101,13 @@ local function paint6th(widget)
     local padding = "  "
     y = y + 2
     local capicityLabel = math.floor(widget.service.capacityRemainingMah) .. "/" .. widget.service.capacityFullMah .. padding
+
+    if system.getSource("Consumption"):state() == false then
+        lcd.color(RED)
+    else
+        lcd.color(BLACK)
+    end
+
     lcd.drawText(w, y, capicityLabel, RIGHT)
     --
     lcd.font(FONT_XL)

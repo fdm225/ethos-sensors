@@ -5,13 +5,13 @@
 local function getNSEW(widget)
     NS = ""
     EW = ""
-    if widget.GPSLat > 0 then
+    if widget.service.GPSLat > 0 then
       NS = "N"
     else
       NS = "S"
     end
 
-    if widget.GPSLon > 0 then
+    if widget.service.GPSLon > 0 then
       EW = "E"
     else
       EW = "W"
@@ -35,8 +35,8 @@ end
 ------------------------------------------------------------------------------------------------
 local function buildDMSstr(widget)
     -- Converts the gps coordinates to Degrees,Minutes,Seconds
-    local LatD,LatM,LatS = dec2deg(widget.GPSLat)
-    local LongD,LongM,LongS = dec2deg(widget.GPSLon)
+    local LatD,LatM,LatS = dec2deg(widget.service.GPSLat)
+    local LongD,LongM,LongS = dec2deg(widget.service.GPSLon)
     local NS,EW = getNSEW(widget)
     local DMSLatString  = math.abs(LatD).."°"..LatM.."'"..string.format("%.1f\"",LatS)..NS
     local DMSLongString = math.abs(LongD).."°"..LongM.."'"..string.format("%.1f\"",LongS)..EW
@@ -68,13 +68,13 @@ local function paint(widget)
         --print("widget.displayCell: " .. widget.displayCell)
         if widget.displayState == 0 then
             displayTitle = "GPS speed Max"
-            displayString = widget.gps_max_speed .. "mph"
+            displayString = widget.service.gps_max_speed .. "mph"
         else
             displayTitle = "GPS"
             if system.getSource({ name="GPS", options=OPTION_LATITUDE }):state() == false or
-                    widget.GPSLat == nil or widget.GPSLon == nil or
-                    widget.GPSLat < -90 or widget.GPSLat > 90 or
-                    widget.GPSLon < -180 or widget.GPSLon > 180 then
+                    widget.service.GPSLat == nil or widget.service.GPSLon == nil or
+                    widget.service.GPSLat < -90 or widget.service.GPSLat > 90 or
+                    widget.service.GPSLon < -180 or widget.service.GPSLon > 180 then
                 displayString = "Sensor Lost"
             else
                 local latStr, lonStr = buildDMSstr(widget)
@@ -101,7 +101,13 @@ local function paint(widget)
         lcd.font(FONT_L)
         --y = (h - font_h)/2
     end
-    lcd.color(WHITE)
+
+    if system.getSource("GPS") == nil or system.getSource("GPS"):state() == false then
+        lcd.color(RED)
+    else
+        lcd.color(WHITE)
+    end
+
     font_w, font_h = lcd.getTextSize(displayString)
     --local x = (w - font_w)/2
     x = (w - font_w) / 2
@@ -111,25 +117,8 @@ local function paint(widget)
 end
 
 local function wakeup(widget)
-    local gps_speed = system.getSource("GPS speed"):value()
-    if gps_speed > widget.gps_max_speed then
-        widget.gps_max_speed = gps_speed
-    end
-
-    widget.GPSLat = system.getSource({ name="GPS", options=OPTION_LATITUDE }):value()
-    widget.GPSLon = system.getSource({ name="GPS", options=OPTION_LONGITUDE }):value()
-
-    --widget.GPSLon = system.getSource({ category=widget.GPSSource:category(), member=widget.GPSSource:member(), options=OPTION_LONGITUDE }):value()
-    --widget.GPSLon = system.getSource({ category=widget.GPSSource:category(), member=widget.GPSSource:member(), options=OPTION_LONGITUDE }):value()
-
-    --local Lat_Value = widget.GPSLat:value()
-    --local Long_Value = widget.GPSLon:value()
-
-    --local gps_location = system.getSource("GPS"):value()
-    --if gps_location > 0 then
-    --    widget.gps_location = gps_location
-    --end
-
+    widget.service.reset_if_needed()
+    widget.service.gps_bg_func()
     lcd.invalidate()
 end
 

@@ -51,10 +51,17 @@ function lib.new()
         wattsMaxValue = 0,
 
         --vfr stuff below here
-        vfr_24 = 0,
+        vfr_current = 0,
+        vfr_24_min = 0,
 
         --rssi stuff below here
-        rssi_24 = 0,
+        rssi_24_current = 0,
+        rssi_24_min = 0,
+
+        --gps stuff below here
+        GPSLat = "",
+        GPSLon = "",
+        gps_max_speed = 0,
     }
 
     function service.playPercentRemaining()
@@ -121,8 +128,11 @@ function lib.new()
                 -- watt stuff here
                 service.wattsCurrentValue = 0
                 service.wattsMaxValue = 0
-                service.vfr_24 = 0
-                service.rssi_24 = 0
+                service.vfr_24_min = 0
+                service.rssi_24_min = 0
+
+                -- gps stuff
+                service.gps_max_speed = 0
 
             elseif -100 == resetSwitchValue then
                 --print("reset switch released")
@@ -160,6 +170,7 @@ function lib.new()
             service.initializeValues()
         end
 
+        widget.service.consumptionSensor = system.getSource("Consumption")
         if service.consumptionSensor ~= nil and service.consumptionSensor:value() ~= service.capacityUsedMah  and service.capacityUsedMah ~= nil then
             --service.capacityUsedMah = math.floor(service.currentSensor:value() * 1000 * (os.clock() - service.startTime) / 3600)
             service.capacityUsedMah = service.consumptionSensor:value()
@@ -242,6 +253,8 @@ function lib.new()
     end
 
     function service.watts_bg_func()
+        service.lipoSensor = system.getSource("LiPo")
+        service.currentSensor = system.getSource("Current")
         if service.lipoSensor ~= nil and service.currentSensor ~= nil then
             local amps = service.currentSensor:value()
             local volts = service.lipoSensor:value()
@@ -250,6 +263,30 @@ function lib.new()
             if service.wattsCurrentValue > service.wattsMaxValue then
                 service.wattsMaxValue = service.wattsCurrentValue
             end
+        end
+    end
+
+    function service.gps_bg_func()
+
+        local gps_speed = system.getSource("GPS speed"):value()
+        if gps_speed > service.gps_max_speed then
+            service.gps_max_speed = gps_speed
+        end
+
+        service.GPSLat = system.getSource({ name="GPS", options=OPTION_LATITUDE }):value()
+        service.GPSLon = system.getSource({ name="GPS", options=OPTION_LONGITUDE }):value()
+
+    end
+
+    function service.rf_bg_func()
+        service.rssi_24_current = system.getSource("RSSI"):value()
+        if service.rssi_24_min < service.rssi_24_current then
+            service.rssi_24_min = service.rssi_24_current
+        end
+
+        service.vfr_current = system.getSource("VFR"):value()
+        if service.vfr_24_min < service.vfr_current then
+            service.vfr_24_min = service.vfr_current
         end
     end
 
