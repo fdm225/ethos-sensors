@@ -50,14 +50,6 @@ function lib.new()
         wattsCurrentValue = 0,
         wattsMaxValue = 0,
 
-        --vfr stuff below here
-        vfr_current = 0,
-        vfr_24_min = 0,
-
-        --rssi stuff below here
-        rssi_24_current = 100,
-        rssi_24_min = 100,
-
         --gps stuff below here
         GPSLat = "",
         GPSLon = "",
@@ -130,8 +122,6 @@ function lib.new()
                 -- watt stuff here
                 service.wattsCurrentValue = 0
                 service.wattsMaxValue = 0
-                service.vfr_24_min = 100
-                service.rssi_24_min = 100
 
                 -- gps stuff
                 service.gps_max_speed = 0
@@ -278,37 +268,6 @@ function lib.new()
             service.GPSLat = system.getSource({ name="GPS", options=OPTION_LATITUDE }):value()
             service.GPSLon = system.getSource({ name="GPS", options=OPTION_LONGITUDE }):value()
         end
-    end
-
-    function service.rf_bg_func()
-        local lcd_needs_update = false
-        local rssi = system.getSource("RSSI")
-        local vfr = system.getSource("VFR")
-
-        if rssi ~= nil and vfr ~=nil then
-            local curr_rssi = rssi:value()
-            local curr_vfr = vfr:value()
-            --print(math.floor(service.rssi_24_min) .. "/" .. math.floor(curr_rssi) .. tostring(math.floor(service.rssi_24_min)>math.floor(curr_rssi)))
-            if service.rssi_24_min >  curr_rssi and curr_rssi > 0 then
-                --print("setting rssi_24_min: ".. service.rssi_24_min)
-                service.rssi_24_min = curr_rssi
-                --print("after set: ".. service.rssi_24_min)
-                lcd_needs_update = true
-            end
-
-            if service.vfr_24_min > curr_vfr and curr_vfr > 0 then
-                service.vfr_24_min = curr_vfr
-                lcd_needs_update = true
-            end
-
-            if curr_rssi ~= service.rssi_24_current or curr_vfr ~= service.vfr_current then
-                service.rssi_24_current = curr_rssi
-                service.vfr_current = curr_vfr
-                lcd_needs_update = true
-            end
-        end
-
-        return lcd_needs_update
     end
 
     return service
