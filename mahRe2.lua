@@ -102,7 +102,7 @@ local function paint6th(widget)
     y = y + 2
     local capicityLabel = math.floor(widget.service.capacityRemainingMah) .. "/" .. widget.service.capacityFullMah .. padding
 
-    if system.getSource("Consumption"):state() == false then
+    if system.getSource("Consumption") == nil or system.getSource("Consumption"):state() == false then
         lcd.color(RED)
     else
         lcd.color(BLACK)
