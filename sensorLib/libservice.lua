@@ -55,8 +55,8 @@ function lib.new()
         vfr_24_min = 0,
 
         --rssi stuff below here
-        rssi_24_current = 0,
-        rssi_24_min = 0,
+        rssi_24_current = 100,
+        rssi_24_min = 100,
 
         --gps stuff below here
         GPSLat = "",
@@ -82,7 +82,8 @@ function lib.new()
         end
 
         local rssi = system.getSource("RSSI")
-        if service.batteryRemainingPercent <= 0 and service.atZeroPlayedCount < service.playAtZero and rssi:value() > 0 then
+        if service.batteryRemainingPercent <= 0 and service.atZeroPlayedCount < service.playAtZero
+                and rssi ~= nil and rssi:value() > 0 then
             --print(service.batteryRemainingPercent, service.atZeroPlayedCount)
             system.playFile(service.soundDirPath .. "BatNo.wav")
             service.atZeroPlayedCount = service.atZeroPlayedCount + 1
@@ -104,6 +105,7 @@ function lib.new()
 
     function service.reset_if_needed()
         -- test if the reset switch is toggled, if so then reset all internal flags
+        --print("service.reset_if_needed")
         if service.resetSwitch then
             -- Update switch position
             local debounced = service.scheduler.check('reset_sw')
@@ -128,8 +130,8 @@ function lib.new()
                 -- watt stuff here
                 service.wattsCurrentValue = 0
                 service.wattsMaxValue = 0
-                service.vfr_24_min = 0
-                service.rssi_24_min = 0
+                service.vfr_24_min = 100
+                service.rssi_24_min = 100
 
                 -- gps stuff
                 service.gps_max_speed = 0
@@ -267,27 +269,46 @@ function lib.new()
     end
 
     function service.gps_bg_func()
-
-        local gps_speed = system.getSource("GPS speed"):value()
-        if gps_speed > service.gps_max_speed then
-            service.gps_max_speed = gps_speed
+        if system.getSource("GPS speed") ~= nil then
+            local gps_speed = system.getSource("GPS speed"):value()
+            if gps_speed > service.gps_max_speed then
+                service.gps_max_speed = gps_speed
+            end
+            
+            service.GPSLat = system.getSource({ name="GPS", options=OPTION_LATITUDE }):value()
+            service.GPSLon = system.getSource({ name="GPS", options=OPTION_LONGITUDE }):value()
         end
-
-        service.GPSLat = system.getSource({ name="GPS", options=OPTION_LATITUDE }):value()
-        service.GPSLon = system.getSource({ name="GPS", options=OPTION_LONGITUDE }):value()
-
     end
 
     function service.rf_bg_func()
-        service.rssi_24_current = system.getSource("RSSI"):value()
-        if service.rssi_24_min < service.rssi_24_current then
-            service.rssi_24_min = service.rssi_24_current
+        local lcd_needs_update = false
+        local rssi = system.getSource("RSSI")
+        local vfr = system.getSource("VFR")
+
+        if rssi ~= nil and vfr ~=nil then
+            local curr_rssi = rssi:value()
+            local curr_vfr = vfr:value()
+            --print(math.floor(service.rssi_24_min) .. "/" .. math.floor(curr_rssi) .. tostring(math.floor(service.rssi_24_min)>math.floor(curr_rssi)))
+            if service.rssi_24_min >  curr_rssi and curr_rssi > 0 then
+                --print("setting rssi_24_min: ".. service.rssi_24_min)
+                service.rssi_24_min = curr_rssi
+                --print("after set: ".. service.rssi_24_min)
+                lcd_needs_update = true
+            end
+
+            if service.vfr_24_min > curr_vfr and curr_vfr > 0 then
+                service.vfr_24_min = curr_vfr
+                lcd_needs_update = true
+            end
+
+            if curr_rssi ~= service.rssi_24_current or curr_vfr ~= service.vfr_current then
+                service.rssi_24_current = curr_rssi
+                service.vfr_current = curr_vfr
+                lcd_needs_update = true
+            end
         end
 
-        service.vfr_current = system.getSource("VFR"):value()
-        if service.vfr_24_min < service.vfr_current then
-            service.vfr_24_min = service.vfr_current
-        end
+        return lcd_needs_update
     end
 
     return service

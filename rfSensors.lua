@@ -15,24 +15,6 @@ local function create()
     return widget
 end
 
-local function paint_rssi24(widget)
-    lcd.font(FONT_XL)
-    local w, h = lcd.getWindowSize()
-    local displayString = "---/---"
-    if widget ~= nil then
-        displayString = math.floor(widget.service.rssi_24) .. "/" .. math.floor(widget.rssi_24_current)
-    end
-    local font_w, font_h = lcd.getTextSize(displayString)
-    --local x = (w - font_w)/2
-    local x = (w - font_w) / 2
-    local y = (h - font_h)/2
-
-    --lcd.color(lcd.RGB(0xF8, 0xB0, 0x38))
-    lcd.drawText(x, y, displayString)
-    lcd.invalidate()
-
-end
-
 local function paint(widget)
     -- 1/9 screen 256x78 (supported)
     local displayTitle = ""
@@ -77,8 +59,10 @@ end
 
 local function wakeup(widget)
     widget.service.reset_if_needed()
-    widget.service.rf_bg_func()
-    
+    local lcd_needs_reset = widget.service.rf_bg_func()
+    if lcd_needs_reset == true then
+        lcd.invalidate()
+    end
 end
 
 local function configure(widget)
