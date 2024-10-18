@@ -152,8 +152,8 @@ local function read(widget)
 end
 
 local function write(widget)
-    print("write widget.resetSwitch: " .. widget.resetSwitch:name())
-    --storage.write("rfsResetSwitch", widget.resetSwitch)
+    --print("write widget.resetSwitch: " .. widget.resetSwitch:name())
+    storage.write("rfsResetSwitch", widget.resetSwitch)
 end
 
 local function event(widget, category, value, x, y)
@@ -187,7 +187,8 @@ end
 
 local function init()
     system.registerWidget({ key = "rfs", name = "rfs", create = create, paint = paint, wakeup = wakeup,
-                            configure = configure, read = read, write = write, persistent = true, event = event })
+                            configure = configure, read = read, write = write,
+                            event = event, title= false })
 end
 
 return { init = init }

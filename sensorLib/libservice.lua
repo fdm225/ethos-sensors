@@ -119,10 +119,6 @@ function lib.new()
                 -- vMin stuff here
                 service.vMinValues = {}
 
-                -- watt stuff here
-                service.wattsCurrentValue = 0
-                service.wattsMaxValue = 0
-
                 -- gps stuff
                 service.gps_max_speed = 0
 
@@ -139,7 +135,6 @@ function lib.new()
         service.reset_if_needed()
         service.mahRe2_bg_func()
         service.vMin_bg_func()
-        service.watts_bg_func()
     end
 
     function service.mahRe2_bg_func()
@@ -162,7 +157,7 @@ function lib.new()
             service.initializeValues()
         end
 
-        widget.service.consumptionSensor = system.getSource("Consumption")
+        service.consumptionSensor = system.getSource("Consumption")
         if service.consumptionSensor ~= nil and service.consumptionSensor:value() ~= service.capacityUsedMah  and service.capacityUsedMah ~= nil then
             --service.capacityUsedMah = math.floor(service.currentSensor:value() * 1000 * (os.clock() - service.startTime) / 3600)
             service.capacityUsedMah = service.consumptionSensor:value()
@@ -242,32 +237,6 @@ function lib.new()
             end
         end
 
-    end
-
-    function service.watts_bg_func()
-        service.lipoSensor = system.getSource("LiPo")
-        service.currentSensor = system.getSource("Current")
-        if service.lipoSensor ~= nil and service.currentSensor ~= nil then
-            local amps = service.currentSensor:value()
-            local volts = service.lipoSensor:value()
-            --print("amps: " .. amps .. " volts: " .. volts)
-            service.wattsCurrentValue = amps * volts
-            if service.wattsCurrentValue > service.wattsMaxValue then
-                service.wattsMaxValue = service.wattsCurrentValue
-            end
-        end
-    end
-
-    function service.gps_bg_func()
-        if system.getSource("GPS speed") ~= nil then
-            local gps_speed = system.getSource("GPS speed"):value()
-            if gps_speed > service.gps_max_speed then
-                service.gps_max_speed = gps_speed
-            end
-            
-            service.GPSLat = system.getSource({ name="GPS", options=OPTION_LATITUDE }):value()
-            service.GPSLon = system.getSource({ name="GPS", options=OPTION_LONGITUDE }):value()
-        end
     end
 
     return service

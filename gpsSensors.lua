@@ -1,17 +1,57 @@
 
+function loadSched()
+    if not libSCHED then
+        -- Loadable code chunk is called immediately and returns libGUI
+        libSCHED = loadfile("sensorLib/libscheduler.lua")
+    end
+    return libSCHED()
+end
+
+local function reset_if_needed(widget)
+    -- test if the reset switch is toggled, if so then reset all internal flags
+    --print("widget.reset_if_needed")
+    if widget.resetSwitch == nil or widget.resetSwitch == "" then
+        --print("setting reset switch")
+        widget.resetSwitch = system.getSource("SH↓")
+    end
+    if widget.resetSwitch ~= nil then
+        -- Update switch position
+        local debounced = widget.scheduler.check('reset_sw')
+        --print("debounced: " .. tostring(debounced))
+        local resetSwitchValue = widget.resetSwitch:value()
+        if (debounced == nil or debounced == true) and -100 ~= resetSwitchValue then
+            -- reset switch
+            widget.scheduler.add('reset_sw', false, 2) -- add the reset switch to the scheduler
+            --print("reset start task: " .. tostring(widget.scheduler.tasks['reset_sw'].ready))
+            widget.scheduler.clear('reset_sw') -- set the reset switch to false in the scheduler so we don't run again
+            --print("reset task: " .. tostring(widget.scheduler.tasks['reset_sw'].ready))
+            --print("reset switch toggled - debounced: " .. tostring(debounced))
+            --print("reset event")
+
+            widget.gps_current_speed = 0
+            widget.gps_max_speed = 0
+
+        elseif -100 == resetSwitchValue then
+            --print("reset switch released")
+            widget.scheduler.remove('reset_sw')
+        end
+    end
+end
+
+
 ------------------------------------------------------------------------------------------------
 -- Function to get North, South, East, West indicators
 ------------------------------------------------------------------------------------------------
 local function getNSEW(widget)
     NS = ""
     EW = ""
-    if widget.service.GPSLat > 0 then
+    if widget.GPSLat > 0 then
       NS = "N"
     else
       NS = "S"
     end
 
-    if widget.service.GPSLon > 0 then
+    if widget.GPSLon > 0 then
       EW = "E"
     else
       EW = "W"
@@ -35,8 +75,8 @@ end
 ------------------------------------------------------------------------------------------------
 local function buildDMSstr(widget)
     -- Converts the gps coordinates to Degrees,Minutes,Seconds
-    local LatD,LatM,LatS = dec2deg(widget.service.GPSLat)
-    local LongD,LongM,LongS = dec2deg(widget.service.GPSLon)
+    local LatD,LatM,LatS = dec2deg(widget.GPSLat)
+    local LongD,LongM,LongS = dec2deg(widget.GPSLon)
     local NS,EW = getNSEW(widget)
     local DMSLatString  = math.abs(LatD).."°"..LatM.."'"..string.format("%.1f\"",LatS)..NS
     local DMSLongString = math.abs(LongD).."°"..LongM.."'"..string.format("%.1f\"",LongS)..EW
@@ -44,18 +84,19 @@ local function buildDMSstr(widget)
 end
 
 ----------------------------------------------------------------------------------------------------------------------
+
+
 local key = "gpsSensors"
 
 local function create()
-    local libservice = libservice or loadService()
-    g_mahRe2Service = g_mahRe2Service or libservice.new()
-
     local widget = {
-        service = g_mahRe2Service,
+        scheduler = libscheduler.new(),
+        resetSwitch = "",
         displayState = 0,
-        gps_max_speed = 0,
         GPSLat = "",
-        GPSLon = ""
+        GPSLon = "",
+        gps_current_speed = 0,
+        gps_max_speed = 0,
     }
     return widget
 end
@@ -68,13 +109,13 @@ local function paint(widget)
         --print("widget.displayCell: " .. widget.displayCell)
         if widget.displayState == 0 then
             displayTitle = "GPS speed Max"
-            displayString = widget.service.gps_max_speed .. "mph"
+            displayString = widget.gps_max_speed .. "mph"
         else
             displayTitle = "GPS"
             if system.getSource({ name="GPS", options=OPTION_LATITUDE }):state() == false or
-                    widget.service.GPSLat == nil or widget.service.GPSLon == nil or
-                    widget.service.GPSLat < -90 or widget.service.GPSLat > 90 or
-                    widget.service.GPSLon < -180 or widget.service.GPSLon > 180 then
+                    widget.GPSLat == nil or widget.GPSLon == nil or
+                    widget.GPSLat < -90 or widget.GPSLat > 90 or
+                    widget.GPSLon < -180 or widget.GPSLon > 180 then
                 displayString = "Sensor Lost"
             else
                 local latStr, lonStr = buildDMSstr(widget)
@@ -117,21 +158,47 @@ local function paint(widget)
 end
 
 local function wakeup(widget)
-    widget.service.reset_if_needed()
-    widget.service.gps_bg_func()
+    reset_if_needed(widget)
+    widget.scheduler.tick()
+    if system.getSource("GPS speed") ~= nil then
+        local gps_speed = system.getSource("GPS speed"):value()
+        if gps_speed > widget.gps_max_speed then
+            widget.gps_max_speed = gps_speed
+        end
+
+        widget.GPSLat = system.getSource({ name="GPS", options=OPTION_LATITUDE }):value()
+        widget.GPSLon = system.getSource({ name="GPS", options=OPTION_LONGITUDE }):value()
+    end
     lcd.invalidate()
+end
+
+local function configure(widget)
+    line = form.addLine("Reset Switch")
+    form.addSwitchField(line, form.getFieldSlots(line)[0], function()
+        return widget.resetSwitch
+    end, function(value)
+        widget.resetSwitch = value
+    end)
+end
+
+local function read(widget)
+    widget.resetSwitch = storage.read("resetSwitch")
+end
+
+local function write(widget)
+    storage.write("resetSwitch", widget.resetSwitch)
 end
 
 local function event(widget, category, value, x, y)
 
     local function event_end_debounce()
-        widget.service.scheduler.remove('touch_event')
+        widget.scheduler.remove('touch_event')
         --print("event_end_debounce")
     end
 
     --print("Event received:", category, value, x, y)
     if category == EVT_KEY and value == KEY_ENTER_BREAK or category == EVT_TOUCH then
-        local debounced = widget.service.scheduler.check('touch_event')
+        local debounced = widget.scheduler.check('touch_event')
         --if debounced == nil then
         --    print("debounced: nil")
         --else
@@ -139,8 +206,8 @@ local function event(widget, category, value, x, y)
         --end
 
         if (debounced == nil or debounced == true)  then
-            widget.service.scheduler.add('touch_event', false, 1, event_end_debounce) -- add the touch event to the scheduler
-            widget.service.scheduler.clear('touch_event') -- set touch event to false in the scheduler so we don't run again
+            widget.scheduler.add('touch_event', false, 1, event_end_debounce) -- add the touch event to the scheduler
+            widget.scheduler.clear('touch_event') -- set touch event to false in the scheduler so we don't run again
             widget.displayState = (widget.displayState + 1) % 2
             --print("touch event: " .. widget.displayState)
             lcd.invalidate()
@@ -153,7 +220,7 @@ end
 
 local function init()
     system.registerWidget({ key = "gsens", name = "GPS Sensors", create = create, paint = paint, wakeup = wakeup,
-                            persistent = true, event=event })
+                            event=event, title= false, read = read, write = write, configure=configure})
 end
 
 return { init = init }
