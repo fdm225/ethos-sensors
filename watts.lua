@@ -1,6 +1,6 @@
 -- define default values
 
-function loadSched()
+local function loadSched()
     if not libSCHED then
         -- Loadable code chunk is called immediately and returns libGUI
         libSCHED = loadfile("sensorLib/libscheduler.lua")
@@ -45,6 +45,7 @@ local name = "Watts"
 local key = "Watts"
 
 local function create()
+    local libscheduler = loadSched()
     widget = {
         scheduler = libscheduler.new(),
         resetSwitch = "",

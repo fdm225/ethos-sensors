@@ -1,5 +1,5 @@
 
-function loadSched()
+local function loadSched()
     if not libSCHED then
         -- Loadable code chunk is called immediately and returns libGUI
         libSCHED = loadfile("sensorLib/libscheduler.lua")
@@ -89,6 +89,7 @@ end
 local key = "gpsSensors"
 
 local function create()
+    local libscheduler = loadSched()
     local widget = {
         scheduler = libscheduler.new(),
         resetSwitch = "",

@@ -1,4 +1,4 @@
-function loadSched()
+local function loadSched()
     if not libSCHED then
         -- Loadable code chunk is called immediately and returns libGUI
         libSCHED = loadfile("sensorLib/libscheduler.lua")
@@ -42,7 +42,7 @@ local name = "RF Sensors"
 local key = "rfwidget"
 
 local function create()
-    libscheduler = libscheduler or loadSched()
+    local libscheduler = loadSched()
 
     widget = {
         scheduler = libscheduler.new(),

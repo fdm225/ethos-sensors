@@ -8,6 +8,16 @@
 --    return libSCHED()
 --end
 
+local function loadService()
+    if not libSERVICE then
+        -- Loadable code chunk is called immediately and returns libGUI
+        libSERVICE = loadfile("sensorLib/libservice.lua")
+    end
+
+    return libSERVICE()
+end
+
+
 local function paintCell(cellIndex, cellData, x, y)
     lcd.color(lcd.RGB(0xF8, 0xB0, 0x38))
     lcd.drawText(x, y, "C" .. cellIndex .. " : ", LEFT)
