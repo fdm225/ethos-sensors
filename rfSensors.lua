@@ -109,11 +109,10 @@ local function wakeup(widget)
     reset_if_needed(widget)
     widget.scheduler.tick()
 
-    local lcd_needs_update = false
     local rssi = system.getSource("RSSI")
     local vfr = system.getSource("VFR")
 
-    if rssi ~= nil and vfr ~= nil then
+    if rssi ~= nil and vfr ~= nil and widget.rssi_24_min ~= nil then
         local curr_rssi = rssi:value()
         local curr_vfr = vfr:value()
         --print(math.floor(widget.rssi_24_min) .. "/" .. math.floor(curr_rssi) .. tostring(math.floor(widget.rssi_24_min)>math.floor(curr_rssi)))
@@ -147,7 +146,7 @@ local function configure(widget)
 end
 
 local function read(widget)
-    widget.resetSwitch = storage.read("rfsResetSwitch")
+    widget.resetSwitch = storage.read("rfsResetSwitch") or system.getSource("SH↓")
     --print("read widget.resetSwitch: " .. widget.resetSwitch:name())
 end
 

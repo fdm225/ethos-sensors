@@ -370,18 +370,13 @@ end
 
 local function read(widget)
     --print("in read funciton")
-    widget.resetSwitch = storage.read("resetSwitch")
-    --widget.resetSwitch = system.getSource({category=CATEGORY_SWITCH, member=17})
-    -- widget.resetSwitch = system.getSource({category=10, member=17})
-    ----if not widget.resetSwitch then
-    ----    widget.resetSwitch = system.getSource("SF╚")
-    ----end
-    widget.capacityFullMah = storage.read("capacity")
-    if not widget.capacityFullMah then
-        widget.capacityFullMah = defaultPackCapacityMah
-    end
+    widget.resetSwitch = storage.read("resetSwitch") or system.getSource("SH↓")
+    widget.capacityFullMah = storage.read("capacity") or defaultPackCapacityMah
+    --if not widget.capacityFullMah then
+    --    widget.capacityFullMah = defaultPackCapacityMah
+    --end
     widget.capacityFullUpdated = true
-    widget.useSpecialFunctionButtons = storage.read("useSpecialFunctionButtons")
+    widget.useSpecialFunctionButtons = storage.read("useSpecialFunctionButtons") or true
     for i = 1, 6, 1 do
         local specialFunctionButton = "sfCapacityMah" .. i
         value = storage.read(specialFunctionButton)
@@ -394,8 +389,7 @@ local function read(widget)
             --print("setting default value:" .. specialFunctionButton .. " " .. sfDefaultValues[i])
         end
     end
-    --widget.consumptionSensor = storage.read("source") | system.getSource("Consumption")
-    widget.consumptionSensor = system.getSource("Consumption")
+    widget.consumptionSensor = storage.read("source") or system.getSource("Consumption")
 end
 
 local function write(widget)

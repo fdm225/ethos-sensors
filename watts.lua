@@ -124,9 +124,9 @@ local function configure(widget)
 end
 
 local function read(widget)
-    widget.lipoSensor = storage.read("lipoSensor")
-    widget.currentSensor = storage.read("currentSensor")
-    widget.resetSwitch = storage.read("resetSwitch")
+    widget.lipoSensor = storage.read("lipoSensor") or system.getSource("LiPo")
+    widget.currentSensor = storage.read("currentSensor") or system.getSource("Current")
+    widget.resetSwitch = storage.read("resetSwitch")  or system.getSource("SH↓")
 end
 
 local function write(widget)

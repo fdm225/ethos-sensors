@@ -183,7 +183,7 @@ local function configure(widget)
 end
 
 local function read(widget)
-    widget.resetSwitch = storage.read("resetSwitch")
+    widget.resetSwitch = storage.read("resetSwitch") or system.getSource("SH↓")
 end
 
 local function write(widget)
