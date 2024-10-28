@@ -90,15 +90,17 @@ local function wakeup(widget)
     if widget.lipoSensor ~= nil and widget.currentSensor ~= nil then
         local amps = widget.currentSensor:value()
         local volts = widget.lipoSensor:value()
-        --print("amps: " .. amps .. " volts: " .. volts)
-        local watts = amps * volts
-        if watts ~= widget.wattsCurrentValue then
-            widget.wattsCurrentValue = watts
-            if widget.wattsCurrentValue > widget.wattsMaxValue then
-                widget.wattsMaxValue = widget.wattsCurrentValue
+        if amps ~= nil and volts ~= nil then
+            local watts = amps * volts
+            if watts ~= widget.wattsCurrentValue then
+                widget.wattsCurrentValue = watts
+                if widget.wattsCurrentValue > widget.wattsMaxValue then
+                    widget.wattsMaxValue = widget.wattsCurrentValue
+                end
+                lcd.invalidate()
             end
-            lcd.invalidate()
         end
+        --print("amps: " .. amps .. " volts: " .. volts)
     end
 end
 
