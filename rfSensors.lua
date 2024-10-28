@@ -116,7 +116,8 @@ local function wakeup(widget)
         local curr_rssi = rssi:value()
         local curr_vfr = vfr:value()
         --print(math.floor(widget.rssi_24_min) .. "/" .. math.floor(curr_rssi) .. tostring(math.floor(widget.rssi_24_min)>math.floor(curr_rssi)))
-        if widget.rssi_24_min > curr_rssi and curr_rssi > 0 then
+        if curr_rssi ~= nil then
+            if widget.rssi_24_min > curr_rssi and curr_rssi > 0 then
             --print("setting rssi_24_min: ".. widget.rssi_24_min)
             widget.rssi_24_min = curr_rssi
             --print("after set: ".. widget.rssi_24_min)
@@ -132,6 +133,7 @@ local function wakeup(widget)
             widget.rssi_24_current = curr_rssi
             widget.vfr_current = curr_vfr
             lcd.invalidate()
+        end
         end
     end
 end
