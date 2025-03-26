@@ -116,24 +116,24 @@ local function wakeup(widget)
         local curr_rssi = rssi:value()
         local curr_vfr = vfr:value()
         --print(math.floor(widget.rssi_24_min) .. "/" .. math.floor(curr_rssi) .. tostring(math.floor(widget.rssi_24_min)>math.floor(curr_rssi)))
-        if curr_rssi ~= nil then
-            if widget.rssi_24_min > curr_rssi and curr_rssi > 0 then
-            --print("setting rssi_24_min: ".. widget.rssi_24_min)
-            widget.rssi_24_min = curr_rssi
-            --print("after set: ".. widget.rssi_24_min)
-            lcd.invalidate()
-        end
+            if curr_rssi ~= nil then
+                if widget.rssi_24_min > curr_rssi and curr_rssi > 0 then
+                --print("setting rssi_24_min: ".. widget.rssi_24_min)
+                widget.rssi_24_min = curr_rssi
+                --print("after set: ".. widget.rssi_24_min)
+                lcd.invalidate()
+            end
 
-        if widget.vfr_24_min > curr_vfr and curr_vfr > 0 then
-            widget.vfr_24_min = curr_vfr
-            lcd.invalidate()
-        end
+            if widget.vfr_24_min ~= nil and curr_vfr~= nil and widget.vfr_24_min > curr_vfr and curr_vfr > 0 then
+                widget.vfr_24_min = curr_vfr
+                lcd.invalidate()
+            end
 
-        if curr_rssi ~= widget.rssi_24_current or curr_vfr ~= widget.vfr_current then
-            widget.rssi_24_current = curr_rssi
-            widget.vfr_current = curr_vfr
-            lcd.invalidate()
-        end
+            if curr_rssi ~= widget.rssi_24_current or curr_vfr ~= widget.vfr_current then
+                widget.rssi_24_current = curr_rssi
+                widget.vfr_current = curr_vfr
+                lcd.invalidate()
+            end
         end
     end
 end

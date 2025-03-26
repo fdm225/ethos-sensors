@@ -162,7 +162,10 @@ local function wakeup(widget)
     reset_if_needed(widget)
     widget.scheduler.tick()
     if system.getSource("GPS speed") ~= nil then
-        local gps_speed = system.getSource("GPS speed"):value()
+        local gps_speed = system.getSource("GPS speed"):value() or 0
+        if widget.gps_max_speed == nil then
+            widget.gps_max_speed = 0
+        end
         if gps_speed > widget.gps_max_speed then
             widget.gps_max_speed = gps_speed
         end

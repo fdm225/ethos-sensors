@@ -98,7 +98,8 @@ local function paint6th(widget)
     else
         lcd.color(BLACK)
     end
-
+    local capacityUsedLabel = widget.capacityUsedMah .. " mAh"
+    lcd.drawText(10, y, capacityUsedLabel, LEFT)
     lcd.drawText(w, y, capicityLabel, RIGHT)
     --
     lcd.font(FONT_XL)
@@ -106,7 +107,7 @@ local function paint6th(widget)
     --y = y + text_h + 5
     --lcd.drawText(box_left + box_width / 2, box_top + (box_height - text_h) / 2 + 4, math.floor(widget.capacityRemainingMah).."/"..widget.capacityFullMah, CENTERED)
     lcd.drawText(box_left + box_width / 2, box_top + (box_height - text_h) / 2 + 4, math.floor(widget.batteryRemainingPercent) .. "%", CENTERED)
-
+    --print(widget.batteryRemainingPercent)
 end
 
 local function paint9th(widget)
@@ -126,6 +127,8 @@ local function playPercentRemaining(service)
         end
 
         if myModVal == 0 and service.batteryRemainingPercent ~= service.batteryRemainingPercentPlayed then
+            print("playing audio")
+            print(service.batteryRemainingPercent, service.atZeroPlayedCount)
             system.playNumber(service.batteryRemainingPercent, UNIT_PERCENT, 0)
             system.playFile(service.soundDirPath .. "remaining.wav")
             service.batteryRemainingPercentPlayed = service.batteryRemainingPercent    -- do not keep playing the same sound file over and
@@ -134,7 +137,8 @@ local function playPercentRemaining(service)
         local rssi = system.getSource("RSSI")
         if service.batteryRemainingPercent <= 0 and service.atZeroPlayedCount < service.playAtZero
                 and rssi ~= nil and rssi:value() > 0 then
-            --print(service.batteryRemainingPercent, service.atZeroPlayedCount)
+            print("playing audio at zero")
+            print(service.batteryRemainingPercent, service.atZeroPlayedCount)
             system.playFile(service.soundDirPath .. "BatNo.wav")
             service.atZeroPlayedCount = service.atZeroPlayedCount + 1
         elseif service.atZeroPlayedCount == service.PlayAtZero and service.batteryRemainingPercent > 0 then
@@ -162,6 +166,7 @@ local function reset_if_needed(service)
             --print("debounced: " .. tostring(debounced))
             local resetSwitchValue = service.resetSwitch:value()
             if (debounced == nil or debounced == true) and -100 ~= resetSwitchValue then
+                --print("reset event")
                 -- reset switch
                 service.scheduler.add('reset_sw', false, 2) -- add the reset switch to the scheduler
                 --print("reset start task: " .. tostring(service.scheduler.tasks['reset_sw'].ready))
@@ -190,6 +195,7 @@ local function mahRe2_bg_func(service)
                     service.capacityFullMah = service.sfCapacityMah[i + 1]
                     service.capacityFullUpdated = true
                     system.playNumber(service.capacityFullMah, UNIT_MILLIAMPERE_HOUR, 0)
+                    initializeValues(service)
                     break
                 end
             end
@@ -201,31 +207,42 @@ local function mahRe2_bg_func(service)
         end
 
         service.consumptionSensor = system.getSource("Consumption")
-        if service.consumptionSensor ~= nil and service.consumptionSensor:value() ~= service.capacityUsedMah  and service.capacityUsedMah ~= nil then
-            --service.capacityUsedMah = math.floor(service.currentSensor:value() * 1000 * (os.clock() - service.startTime) / 3600)
-            service.capacityUsedMah = service.consumptionSensor:value()
-            --print("capacityUsedMah: " .. service.capacityUsedMah)
-            if (service.capacityUsedMah == 0) and service.canCallInitFuncAgain then
+        if service.capacityUsedMah == nil then
+            service.capacityUsedMah = 0
+        end
+        --print("service.consumptionSensor: " .. tostring(service.consumptionSensor:value()))
+        --print("service.capacityReservedMah: " .. tostring(service.capacityReservedMah))
+        --print("service.capacityUsedMah: " .. tostring(service.capacityUsedMah))
+
+        if  service.capacityReservedMah ~= nil and service.capacityUsedMah ~= nil then
+            if service.consumptionSensor == nil or service.consumptionSensor:value() == nil then
+                service.capacityUsedMah = 0
+            else
+                service.capacityUsedMah = service.consumptionSensor:value()
+            end
+
+            if service.capacityUsedMah == 0 and service.canCallInitFuncAgain == true then
                 -- service.capacityUsedMah == 0 when Telemetry has been reset or model loaded
                 -- service.capacityUsedMah == 0 when no battery used which could be a long time
                 --	so don't keep calling the service.initializeValues unnecessarily.
-
                 initializeValues(service)
                 service.canCallInitFuncAgain = false
-            elseif service.capacityUsedMah ~= nil and service.capacityUsedMah > 0 then
+            elseif service.capacityUsedMah ~= nil and math.floor(service.capacityUsedMah) > 0
+                    and service.canCallInitFuncAgain == false then
                 -- Call init function again when Telemetry has been reset
                 service.canCallInitFuncAgain = true
             end
             service.capacityRemainingMah = service.capacityReservedMah - service.capacityUsedMah
-        end -- mAhSensor ~= ""
 
-        -- Update battery remaining percent
-        if service.capacityReservedMah > 0 then
-            service.batteryRemainingPercent = math.floor((service.capacityRemainingMah / service.capacityFullMah) * 100)
+
+            -- Update battery remaining percent
+            if service.capacityReservedMah > 0 then
+                service.batteryRemainingPercent = math.floor((service.capacityRemainingMah / service.capacityFullMah) * 100)
+            end
+
+            playPercentRemaining(service)
+            lcd.invalidate()
         end
-
-        playPercentRemaining(service)
-        lcd.invalidate()
     end
 
 ----------------------------------------------------------------------------------------------------------------------

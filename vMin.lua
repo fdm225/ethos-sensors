@@ -247,26 +247,28 @@ local function vMin_bg_func(service)
             local lipoSensor = system.getSource({name="LiPo", category=CATEGORY_TELEMETRY_SENSOR })
             local numCells = system.getSource({member = lipoSensor:member(), category=CATEGORY_TELEMETRY_SENSOR, options=OPTION_CELL_COUNT})
 
-            -- print("numCells: " .. numCells:value() .. "\n")
-            for cell = 1, numCells:value() do
-                local cellSensor = system.getSource({member = lipoSensor:member(), category=CATEGORY_TELEMETRY_SENSOR, options=OPTION_CELL_INDEX(cell)})
-                -- local cellVoltage = sensor:value(OPTION_CELL_INDEX(cell))
-                local cellVoltage = cellSensor:value()
-                -- print("cell: " .. cell .. " : " .. cellVoltage .. "\n")
-                if service.vMinValues[cell] == nil or service.vMinValues[cell].current ~= cellVoltage then
-                    updateRequired = true
-                    if service.vMinValues[cell] == nil then
-                        service.vMinValues[cell] = {}
-                    end
-                    service.vMinValues[cell].current = cellVoltage
-                    if service.vMinValues[cell].low == nil or service.vMinValues[cell].low > cellVoltage then
-                        service.vMinValues[cell].low = cellVoltage
+            if lipoSensor ~= nil and numCells ~= nil and numCells:value() then
+                -- print("numCells: " .. numCells:value() .. "\n")
+                for cell = 1, numCells:value() do
+                    local cellSensor = system.getSource({member = lipoSensor:member(), category=CATEGORY_TELEMETRY_SENSOR, options=OPTION_CELL_INDEX(cell)})
+                    -- local cellVoltage = sensor:value(OPTION_CELL_INDEX(cell))
+                    local cellVoltage = cellSensor:value()
+                    -- print("cell: " .. cell .. " : " .. cellVoltage .. "\n")
+                    if service.vMinValues[cell] == nil or service.vMinValues[cell].current ~= cellVoltage then
+                        updateRequired = true
+                        if service.vMinValues[cell] == nil then
+                            service.vMinValues[cell] = {}
+                        end
+                        service.vMinValues[cell].current = cellVoltage
+                        if service.vMinValues[cell].low == nil or service.vMinValues[cell].low > cellVoltage then
+                            service.vMinValues[cell].low = cellVoltage
+                        end
                     end
                 end
-            end
 
-            if updateRequired then
-                lcd.invalidate()
+                if updateRequired then
+                    lcd.invalidate()
+                end
             end
         end
     end

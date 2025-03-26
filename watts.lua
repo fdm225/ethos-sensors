@@ -93,9 +93,9 @@ local function wakeup(widget)
         if amps ~= nil and volts ~= nil then
             local watts = amps * volts
             if watts ~= widget.wattsCurrentValue then
-                widget.wattsCurrentValue = watts
+                widget.wattsCurrentValue = math.floor(watts)
                 if widget.wattsCurrentValue > widget.wattsMaxValue then
-                    widget.wattsMaxValue = widget.wattsCurrentValue
+                    widget.wattsMaxValue = math.floor(widget.wattsCurrentValue)
                 end
                 lcd.invalidate()
             end
